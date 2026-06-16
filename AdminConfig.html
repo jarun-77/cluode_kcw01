@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #1A5276; --secondary: #2E86C1; --accent: #148F77;
+      --light-blue: #D6EAF8; --gray-bg: #F2F3F4;
+      --font-main: 'Sarabun', sans-serif; --font-heading: 'Prompt', sans-serif;
+      --radius: 12px; --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-main); background: var(--gray-bg); color: #2C3E50; display: flex; }
+
+    /* SIDEBAR */
+    .sidebar { width: 240px; background: var(--primary); min-height: 100vh; flex-shrink: 0; position: fixed; top: 0; left: 0; z-index: 100; display: flex; flex-direction: column; }
+    .sb-logo { padding: 20px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sb-logo-text { font-family: var(--font-heading); color: #fff; font-size: 18px; font-weight: 700; }
+    .sb-logo-sub { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+    .sb-user { padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .sb-user-name { font-size: 13px; color: #fff; font-weight: 600; }
+    .sb-user-role { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+    .sb-nav { flex: 1; padding: 10px 0; }
+    .sb-nav a { display: flex; align-items: center; gap: 10px; padding: 11px 20px; color: rgba(255,255,255,0.75); text-decoration: none; font-size: 14px; transition: all .2s; }
+    .sb-nav a:hover, .sb-nav a.active { background: rgba(255,255,255,0.12); color: #fff; }
+    .sb-nav a.active { border-right: 3px solid #fff; }
+    .sb-footer { padding: 14px 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .sb-footer a { color: rgba(255,255,255,0.5); font-size: 13px; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .sb-footer a:hover { color: #fff; }
+
+    /* MAIN */
+    .main-wrapper { margin-left: 240px; flex: 1; min-height: 100vh; }
+    .topbar { background: #fff; padding: 0 28px; height: 60px; display: flex; align-items: center; border-bottom: 1px solid #E8ECF0; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+    .page-heading { font-family: var(--font-heading); font-size: 18px; font-weight: 700; color: var(--primary); }
+
+    .content { padding: 24px 28px; max-width: 900px; }
+
+    /* NOTICE */
+    .access-notice { background: #FEF9E7; border: 1px solid #F39C12; border-radius: 10px; padding: 14px 18px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 10px; }
+    .access-notice i { color: #F39C12; margin-top: 2px; flex-shrink: 0; }
+    .access-notice p { font-size: 13px; color: #7D6608; line-height: 1.6; }
+
+    /* CONFIG SECTIONS */
+    .config-section { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+    .section-head { padding: 16px 24px; border-bottom: 1px solid #F0F3F4; display: flex; align-items: center; gap: 10px; }
+    .section-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .section-title { font-family: var(--font-heading); font-size: 15px; font-weight: 600; color: var(--primary); }
+    .section-subtitle { font-size: 12px; color: #95A5A6; margin-top: 2px; }
+    .section-body { padding: 20px 24px; }
+    .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .config-item { display: flex; flex-direction: column; gap: 6px; }
+    .config-item.full { grid-column: 1/-1; }
+    .config-label { font-size: 13px; font-weight: 600; color: #2C3E50; }
+    .config-hint { font-size: 11px; color: #95A5A6; margin-top: -2px; }
+    .config-input {
+      border: 2px solid #E8ECF0; border-radius: 10px; padding: 10px 14px;
+      font-family: var(--font-main); font-size: 14px; outline: none; transition: border .2s;
+    }
+    .config-input:focus { border-color: var(--secondary); }
+    .config-input[readonly] { background: #F8FAFB; color: #7F8C8D; cursor: not-allowed; }
+
+    /* TOGGLE */
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #F5F7F8; }
+    .toggle-row:last-child { border-bottom: none; }
+    .toggle-info { flex: 1; }
+    .toggle-label { font-size: 14px; font-weight: 600; color: #2C3E50; }
+    .toggle-desc { font-size: 12px; color: #95A5A6; margin-top: 2px; }
+    .toggle-switch { position: relative; width: 48px; height: 26px; flex-shrink: 0; margin-left: 16px; }
+    .toggle-switch input { display: none; }
+    .toggle-slider { position: absolute; inset: 0; background: #E8ECF0; border-radius: 13px; cursor: pointer; transition: background .3s; }
+    .toggle-slider::after { content: ''; position: absolute; width: 20px; height: 20px; background: #fff; border-radius: 50%; top: 3px; left: 3px; transition: left .3s; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+    input:checked + .toggle-slider { background: var(--accent); }
+    input:checked + .toggle-slider::after { left: 25px; }
+
+    /* VERSION INFO */
+    .version-table { width: 100%; border-collapse: collapse; }
+    .version-table td { padding: 10px 12px; font-size: 13px; border-bottom: 1px solid #F5F7F8; }
+    .version-table td:first-child { color: #7F8C8D; font-weight: 600; width: 200px; }
+    .version-table tr:last-child td { border-bottom: none; }
+
+    /* DANGER ZONE */
+    .danger-zone { background: #FDEDEC; border: 1px solid #F5B7B1; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px; }
+    .danger-title { font-family: var(--font-heading); font-size: 15px; font-weight: 700; color: #E74C3C; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .danger-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #F5B7B1; }
+    .danger-item:last-child { border-bottom: none; }
+    .danger-info p { font-size: 13px; font-weight: 600; color: #2C3E50; }
+    .danger-info span { font-size: 12px; color: #95A5A6; }
+    .btn-danger { background: #E74C3C; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-family: var(--font-main); font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-danger:hover { background: #C0392B; }
+
+    /* SAVE BTN */
+    .save-bar { background: #fff; border-top: 1px solid #E8ECF0; padding: 16px 24px; display: flex; justify-content: flex-end; gap: 10px; }
+    .btn-cancel { background: #fff; border: 2px solid #E0E0E0; color: #7F8C8D; border-radius: 10px; padding: 10px 20px; font-family: var(--font-main); font-size: 14px; cursor: pointer; }
+    .btn-save { background: var(--primary); color: #fff; border: none; border-radius: 10px; padding: 10px 24px; font-family: var(--font-main); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+    .btn-save:hover { background: var(--secondary); }
+
+    /* Change Password */
+    .pw-form { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #2C3E50; color: #fff; padding: 12px 24px; border-radius: 10px; font-size: 14px; z-index: 2000; display: none; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+    .toast.show { display: flex; }
+    .toast.success { background: var(--accent); }
+    .toast.error { background: #E74C3C; }
+
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .main-wrapper { margin-left: 0; }
+      .config-grid { grid-template-columns: 1fr; }
+      .pw-form { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-text"><i class="fas fa-lightbulb" style="margin-right:6px"></i>KIMS</div>
+    <div class="sb-logo-sub">โรงเรียนกระแชงวิทยา</div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-user-name" id="sbUserName">กำลังโหลด...</div>
+    <div class="sb-user-role">ผู้ดูแลสูงสุด</div>
+  </div>
+  <nav class="sb-nav">
+    <a href="?page=admin-dashboard"><i class="fas fa-chart-pie fa-fw"></i>แดชบอร์ด</a>
+    <a href="?page=admin-approve"><i class="fas fa-check-square fa-fw"></i>อนุมัตินวัตกรรม</a>
+    <a href="?page=innovations"><i class="fas fa-archive fa-fw"></i>คลังนวัตกรรม</a>
+    <a href="?page=admin-users"><i class="fas fa-users fa-fw"></i>จัดการผู้ใช้</a>
+    <a href="?page=admin-reports"><i class="fas fa-file-chart-bar fa-fw"></i>รายงาน</a>
+    <a href="?page=admin-config" class="active"><i class="fas fa-cog fa-fw"></i>ตั้งค่าระบบ</a>
+  </nav>
+  <div class="sb-footer">
+    <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i>ออกจากระบบ</a>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main-wrapper">
+  <div class="topbar">
+    <div class="page-heading"><i class="fas fa-cog" style="margin-right:8px;color:var(--secondary)"></i>ตั้งค่าระบบ</div>
+  </div>
+
+  <div class="content" id="mainContent">
+    <div style="text-align:center;padding:60px"><i class="fas fa-spinner fa-spin" style="font-size:32px;color:var(--secondary)"></i></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── EXEC_URL ถูก inject โดย Code.gs ตอน serve ──────────
+  var EXEC_URL = "";  // placeholder — Code.gs จะแทนค่าจริง
+
+  function getExecUrl() { return EXEC_URL || window.location.href.split('?')[0]; }
+  function goTo(page) {
+    var token = sessionStorage.getItem('KIMS_TOKEN') || '';
+    var url = getExecUrl() + '?page=' + page;
+    if (token) url += '&_kt=' + encodeURIComponent(token);
+    window.open(url, '_top');
+  }
+  (function() {
+    try { var p = new URLSearchParams(window.location.search); var t = p.get('_kt'); if (t) { sessionStorage.setItem('KIMS_TOKEN', t); p.delete('_kt'); if (history.replaceState) history.replaceState(null, '', '?' + p.toString()); } } catch(e) {}
+    document.addEventListener('click', function(ev) {
+      var a = ev.target && ev.target.closest ? ev.target.closest('a[href*="?page="]') : null;
+      if (!a) return;
+      var href = a.getAttribute('href') || '';
+      var i = href.indexOf('?page='); if (i === -1) return;
+      ev.preventDefault();
+      var tok = sessionStorage.getItem('KIMS_TOKEN') || '';
+      var url = getExecUrl() + href.substring(i);
+      if (tok && url.indexOf('_kt=') === -1) url += '&_kt=' + encodeURIComponent(tok);
+      window.open(url, a.getAttribute('target') === '_blank' ? '_blank' : '_top');
+    });
+  })();
+  function getToken() { return sessionStorage.getItem('KIMS_TOKEN') || ''; }
+
+  function callAPI(action, params) {
+    var payload = Object.assign({ action: action, token: getToken() }, params || {});
+    return new Promise(function(resolve, reject) {
+      google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(reject)
+        .handleRequest(payload);
+    });
+  }
+
+
+let configData = {};
+
+window.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const res = await callAPI('getCurrentUser', {});
+    if (!res.success) { sessionStorage.removeItem('KIMS_TOKEN'); sessionStorage.removeItem('KIMS_USER'); goTo('login'); return; }
+    const u = res.data;
+    if (u.role !== 'SUPERADMIN') { goTo('admin-dashboard'); return; }
+    document.getElementById('sbUserName').textContent = u.full_name;
+    await loadConfig();
+  } catch(e) { sessionStorage.removeItem('KIMS_TOKEN'); sessionStorage.removeItem('KIMS_USER'); goTo('login'); }
+});
+
+async function loadConfig() {
+  try {
+    const res = await callAPI('getConfig', {});
+    if (!res.success) { showToast('ไม่สามารถโหลดค่าตั้งได้', 'error'); return; }
+    configData = res.data || {};
+    renderConfig();
+  } catch(e) { showToast('เกิดข้อผิดพลาด', 'error'); }
+}
+
+function renderConfig() {
+  const c = configData;
+  document.getElementById('mainContent').innerHTML = `
+    <div class="access-notice">
+      <i class="fas fa-lock"></i>
+      <p>หน้านี้สำหรับผู้ดูแลระบบสูงสุดเท่านั้น การแก้ไขค่าในหน้านี้จะมีผลต่อการทำงานของระบบทั้งหมด</p>
+    </div>
+
+    <!-- School Info -->
+    <div class="config-section">
+      <div class="section-head">
+        <div class="section-icon" style="background:#D6EAF8;color:#2E86C1"><i class="fas fa-school"></i></div>
+        <div>
+          <div class="section-title">ข้อมูลโรงเรียน</div>
+          <div class="section-subtitle">ชื่อและข้อมูลพื้นฐานของสถาบัน</div>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="config-grid">
+          <div class="config-item full">
+            <div class="config-label">ชื่อโรงเรียน</div>
+            <input class="config-input" id="cfg_school_name" value="${escHtml(c.school_name||'โรงเรียนกระแชงวิทยา')}">
+          </div>
+          <div class="config-item">
+            <div class="config-label">รหัส สพฐ.</div>
+            <input class="config-input" id="cfg_obec_code" value="${escHtml(c.obec_code||'1031670201')}">
+          </div>
+          <div class="config-item">
+            <div class="config-label">อีเมลผู้ดูแล</div>
+            <input class="config-input" type="email" id="cfg_admin_email" value="${escHtml(c.admin_email||'')}">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload Settings -->
+    <div class="config-section">
+      <div class="section-head">
+        <div class="section-icon" style="background:#E8F8F5;color:#148F77"><i class="fas fa-upload"></i></div>
+        <div>
+          <div class="section-title">ตั้งค่าการอัปโหลด</div>
+          <div class="section-subtitle">จำกัดขนาดและประเภทไฟล์</div>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="config-grid">
+          <div class="config-item">
+            <div class="config-label">ขนาดไฟล์สูงสุด (MB)</div>
+            <div class="config-hint">ค่าเริ่มต้น: 100 MB</div>
+            <input class="config-input" type="number" id="cfg_max_file_mb" value="${escHtml(String(c.max_file_mb||100))}" min="1" max="500">
+          </div>
+          <div class="config-item">
+            <div class="config-label">เซสชันหมดอายุ (ชั่วโมง)</div>
+            <div class="config-hint">ค่าเริ่มต้น: 8 ชั่วโมง</div>
+            <input class="config-input" type="number" id="cfg_session_hours" value="${escHtml(String(c.session_hours||8))}" min="1" max="72">
+          </div>
+          <div class="config-item full">
+            <div class="config-label">ประเภทไฟล์ที่อนุญาต</div>
+            <div class="config-hint">คั่นด้วยจุลภาค ไม่ต้องใส่จุด</div>
+            <input class="config-input" id="cfg_allowed_types" value="${escHtml(c.allowed_types||'pdf,doc,docx,xls,xlsx,ppt,pptx,mp4,jpg,jpeg,png,gif')}">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature Toggles -->
+    <div class="config-section">
+      <div class="section-head">
+        <div class="section-icon" style="background:#FEF9E7;color:#E67E22"><i class="fas fa-toggle-on"></i></div>
+        <div>
+          <div class="section-title">เปิด/ปิดฟีเจอร์</div>
+          <div class="section-subtitle">ควบคุมการใช้งานแต่ละส่วนของระบบ</div>
+        </div>
+      </div>
+      <div class="section-body">
+        ${[
+          ['allow_register','อนุญาตให้ผู้ดูแลสร้างบัญชีใหม่ได้','เมื่อปิด ไม่สามารถเพิ่มผู้ใช้ใหม่ในระบบ',c.allow_register !== 'false'],
+          ['public_access','อนุญาตการเข้าชมแบบสาธารณะ','เมื่อเปิด บุคคลภายนอกสามารถดูนวัตกรรมได้',c.public_access !== 'false'],
+          ['email_notify','ส่งอีเมลแจ้งเตือน','แจ้งเตือนครูเมื่อนวัตกรรมได้รับการอนุมัติหรือปฏิเสธ',c.email_notify !== 'false'],
+          ['show_teacher_name','แสดงชื่อครูในหน้าสาธารณะ','เมื่อปิด ซ่อนชื่อครูจากหน้าคลังนวัตกรรมสาธารณะ',c.show_teacher_name !== 'false'],
+        ].map(([key, label, desc, checked]) => `
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">${label}</div>
+              <div class="toggle-desc">${desc}</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="cfg_${key}" ${checked ? 'checked' : ''}>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- Change Password -->
+    <div class="config-section">
+      <div class="section-head">
+        <div class="section-icon" style="background:#F9F0FF;color:#8E44AD"><i class="fas fa-key"></i></div>
+        <div>
+          <div class="section-title">เปลี่ยนรหัสผ่าน</div>
+          <div class="section-subtitle">เปลี่ยนรหัสผ่านบัญชีของคุณ</div>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="pw-form">
+          <div class="config-item">
+            <div class="config-label">รหัสผ่านเก่า</div>
+            <input class="config-input" type="password" id="oldPw" placeholder="รหัสผ่านปัจจุบัน">
+          </div>
+          <div class="config-item">
+            <div class="config-label">รหัสผ่านใหม่</div>
+            <input class="config-input" type="password" id="newPw" placeholder="อย่างน้อย 6 ตัวอักษร">
+          </div>
+          <div class="config-item">
+            <div class="config-label">ยืนยันรหัสผ่านใหม่</div>
+            <input class="config-input" type="password" id="confirmPw" placeholder="ยืนยันรหัสผ่าน">
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <button style="background:var(--secondary);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-family:var(--font-main);font-size:14px;font-weight:600;cursor:pointer" onclick="changePassword()">
+            <i class="fas fa-key"></i> เปลี่ยนรหัสผ่าน
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- System Info -->
+    <div class="config-section">
+      <div class="section-head">
+        <div class="section-icon" style="background:#F2F3F4;color:#7F8C8D"><i class="fas fa-info-circle"></i></div>
+        <div>
+          <div class="section-title">ข้อมูลระบบ</div>
+          <div class="section-subtitle">เวอร์ชันและสถานะของระบบ</div>
+        </div>
+      </div>
+      <div class="section-body">
+        <table class="version-table">
+          <tr><td>ชื่อระบบ</td><td>KIMS — Krachangwittaya Innovation Management System</td></tr>
+          <tr><td>เวอร์ชัน</td><td>1.0.0</td></tr>
+          <tr><td>Platform</td><td>Google Apps Script (V8)</td></tr>
+          <tr><td>ฐานข้อมูล</td><td>Google Sheets</td></tr>
+          <tr><td>ที่เก็บไฟล์</td><td>Google Drive</td></tr>
+          <tr><td>วันที่ติดตั้ง</td><td>${new Date().getFullYear() + 543}</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Save Bar -->
+    <div class="save-bar">
+      <button class="btn-cancel" onclick="loadConfig()">ยกเลิกการเปลี่ยนแปลง</button>
+      <button class="btn-save" onclick="saveConfig()"><i class="fas fa-save"></i>บันทึกการตั้งค่า</button>
+    </div>
+  `;
+}
+
+async function saveConfig() {
+  const updates = {
+    school_name: document.getElementById('cfg_school_name')?.value?.trim() || '',
+    obec_code: document.getElementById('cfg_obec_code')?.value?.trim() || '',
+    admin_email: document.getElementById('cfg_admin_email')?.value?.trim() || '',
+    max_file_mb: document.getElementById('cfg_max_file_mb')?.value || '100',
+    session_hours: document.getElementById('cfg_session_hours')?.value || '8',
+    allowed_types: document.getElementById('cfg_allowed_types')?.value?.trim() || '',
+    allow_register: document.getElementById('cfg_allow_register')?.checked ? 'true' : 'false',
+    public_access: document.getElementById('cfg_public_access')?.checked ? 'true' : 'false',
+    email_notify: document.getElementById('cfg_email_notify')?.checked ? 'true' : 'false',
+    show_teacher_name: document.getElementById('cfg_show_teacher_name')?.checked ? 'true' : 'false',
+  };
+
+  showToast('กำลังบันทึก...', '');
+  try {
+    const res = await callAPI('updateConfig', { configs: updates });
+    if (res.success) {
+      showToast('บันทึกการตั้งค่าสำเร็จ', 'success');
+      await loadConfig();
+    } else { showToast(res.error || 'ไม่สามารถบันทึกได้', 'error'); }
+  } catch(e) { showToast('เกิดข้อผิดพลาด', 'error'); }
+}
+
+async function changePassword() {
+  const old_password = document.getElementById('oldPw')?.value;
+  const new_password = document.getElementById('newPw')?.value;
+  const confirm = document.getElementById('confirmPw')?.value;
+  if (!old_password || !new_password) { showToast('กรุณากรอกรหัสผ่านให้ครบ', 'error'); return; }
+  if (new_password !== confirm) { showToast('รหัสผ่านใหม่ไม่ตรงกัน', 'error'); return; }
+  if (new_password.length < 6) { showToast('รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร', 'error'); return; }
+  try {
+    const res = await callAPI('changePassword', { old_password, new_password });
+    if (res.success) {
+      showToast('เปลี่ยนรหัสผ่านสำเร็จ', 'success');
+      document.getElementById('oldPw').value = '';
+      document.getElementById('newPw').value = '';
+      document.getElementById('confirmPw').value = '';
+    } else { showToast(res.error || 'ไม่สามารถเปลี่ยนรหัสผ่านได้', 'error'); }
+  } catch(e) { showToast('เกิดข้อผิดพลาด', 'error'); }
+}
+
+async function logout() {
+  await callAPI('logout', {});
+  sessionStorage.removeItem('KIMS_TOKEN'); sessionStorage.removeItem('KIMS_USER'); goTo('login');
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type||''}`;
+  if (type !== 'loading' && type !== '') setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>

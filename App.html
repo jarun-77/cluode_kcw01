@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<base target="_top">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --primary:#1A5276;--secondary:#2E86C1;--accent:#148F77;
+    --light-blue:#D6EAF8;--light-teal:#D5F5E3;
+    --gray-bg:#F2F3F4;--dark-gray:#566573;--white:#fff;
+    --published:#27AE60;--pending:#F39C12;--draft:#85929E;--rejected:#E74C3C;
+    --font-main:'Sarabun',sans-serif;--font-heading:'Prompt',sans-serif;
+    --radius:12px;--shadow:0 2px 12px rgba(0,0,0,.08);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font-main);background:var(--gray-bg);color:#2c3e50}
+  .spin{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+  .hidden{display:none!important}
+  a{color:var(--secondary)}
+
+  /* LOGIN */
+  #loginView{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#1A5276 0%,#2E86C1 60%,#148F77 100%)}
+  .login-card{background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.2);width:100%;max-width:420px;overflow:hidden}
+  .login-head{background:var(--primary);color:#fff;text-align:center;padding:32px 28px 28px}
+  .login-head .logo{width:64px;height:64px;background:rgba(255,255,255,.15);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px}
+  .login-head h2{font-family:var(--font-heading);font-size:1.4rem;margin-bottom:4px}
+  .login-head p{font-size:13px;opacity:.85}
+  .login-body{padding:28px}
+  .hint{background:var(--gray-bg);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--dark-gray);margin-bottom:20px;border-left:3px solid var(--secondary)}
+  .label{display:block;font-size:14px;font-weight:600;color:#333;margin-bottom:6px}
+  .input-wrap{position:relative;margin-bottom:18px}
+  .input-wrap>i{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--dark-gray)}
+  .input-wrap input{width:100%;border:2px solid #e0e0e0;border-radius:10px;padding:12px 14px 12px 40px;font-family:var(--font-main);font-size:15px;outline:none;background:var(--gray-bg);transition:border-color .2s}
+  .input-wrap input:focus{border-color:var(--secondary);background:#fff}
+  .toggle-pw{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--dark-gray);padding:4px}
+  .btn-login{width:100%;background:var(--primary);color:#fff;border:none;border-radius:10px;padding:14px;font-family:var(--font-main);font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s}
+  .btn-login:hover{background:var(--secondary)}.btn-login:disabled{opacity:.6;cursor:not-allowed}
+  .alert{border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:14px;display:none;align-items:center;gap:8px}
+  .alert.error{background:#FADBD8;color:#922B21;border:1px solid #F1948A;display:flex}
+  .alert.success{background:#D5F5E3;color:#1E8449;border:1px solid #82E0AA;display:flex}
+
+  /* SHELL */
+  #appShell{display:flex;min-height:100vh}
+  .sidebar{width:240px;background:var(--primary);color:#fff;position:fixed;left:0;top:0;bottom:0;display:flex;flex-direction:column;z-index:200;overflow-y:auto}
+  .sidebar-logo{padding:22px 20px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:10px}
+  .sidebar-logo .icon{width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .sidebar-logo .name{font-family:var(--font-heading);font-size:16px;font-weight:700}
+  .sidebar-logo .sub{font-size:11px;opacity:.7}
+  .sidebar-user{padding:16px 20px;background:rgba(0,0,0,.15);font-size:13px}
+  .sidebar-user .lbl{opacity:.7;font-size:11px;margin-bottom:2px}
+  .sidebar-user .nm{font-weight:600}.sidebar-user .rl{opacity:.8;font-size:12px}
+  .nav-section{padding:10px 0}
+  .nav-label{padding:6px 20px;font-size:11px;font-weight:600;opacity:.5;text-transform:uppercase;letter-spacing:.5px}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:11px 20px;color:rgba(255,255,255,.8);text-decoration:none;font-size:14px;cursor:pointer;transition:all .2s;border:none;background:none;width:100%;text-align:left;font-family:var(--font-main)}
+  .nav-item:hover{background:rgba(255,255,255,.08);color:#fff}
+  .nav-item.active{background:rgba(255,255,255,.15);color:#fff;border-left:3px solid var(--accent)}
+  .nav-item .badge-nav{margin-left:auto;background:var(--pending);color:#fff;border-radius:10px;padding:1px 8px;font-size:11px;font-weight:600}
+  .sidebar-bottom{margin-top:auto;padding:16px 20px;border-top:1px solid rgba(255,255,255,.1)}
+  .btn-logout{width:100%;background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:8px;padding:11px;font-family:var(--font-main);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+  .btn-logout:hover{background:var(--rejected)}
+  .main{margin-left:240px;flex:1;padding:24px 28px;width:calc(100% - 240px)}
+  .top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:10px}
+  .page-title{font-family:var(--font-heading);font-size:1.3rem;color:var(--primary);display:flex;align-items:center;gap:10px}
+  .top-bar-right{display:flex;align-items:center;gap:14px;font-size:13px;color:var(--dark-gray);flex-wrap:wrap}
+  .top-bar-right i.clk{cursor:pointer}
+
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:22px}
+  .kpi-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;display:flex;align-items:center;gap:16px}
+  .kpi-icon{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff}
+  .kpi-card.total .kpi-icon{background:var(--secondary)}
+  .kpi-card.published .kpi-icon{background:var(--published)}
+  .kpi-card.pending .kpi-icon{background:var(--pending)}
+  .kpi-card.teachers .kpi-icon{background:var(--accent)}
+  .kpi-num{font-family:var(--font-heading);font-size:1.8rem;font-weight:700;color:var(--primary);line-height:1}
+  .kpi-label{font-size:13px;color:var(--dark-gray);margin-top:4px}
+
+  .card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:20px}
+  .card-title{font-family:var(--font-heading);font-size:1rem;color:var(--primary);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+  .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .mobile-bar{display:none;align-items:center;gap:14px;margin:-24px -28px 18px;padding:14px 18px;background:linear-gradient(135deg,#1A5276,#15425e);color:#fff;position:sticky;top:0;z-index:160;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+  .mobile-bar .ham{font-size:22px;cursor:pointer;background:none;border:none;color:#fff;padding:0}
+  .mobile-bar .ttl{font-family:var(--font-heading);font-weight:600;font-size:16px}
+  .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:190}
+  @media(max-width:900px){
+    .charts-row{grid-template-columns:1fr}
+    .sidebar{transform:translateX(-100%);transition:transform .3s ease;width:264px}
+    .sidebar.open{transform:translateX(0)}
+    .main{margin-left:0!important;width:100%!important;padding:24px 16px}
+    .public-bar{margin:-24px -16px 18px}
+    .mobile-bar.on{display:flex}
+    .sidebar-backdrop.show{display:block}
+    .kpi-grid{grid-template-columns:1fr 1fr}
+    .form-row{grid-template-columns:1fr 1fr}
+  }
+  @media(max-width:480px){.kpi-grid{grid-template-columns:1fr}}
+  .chart-wrap{position:relative;height:260px}.chart-wrap.tall{height:300px}
+
+  .data-table{width:100%;border-collapse:collapse;font-size:14px}
+  .data-table th{text-align:left;padding:10px;border-bottom:2px solid var(--gray-bg);color:var(--dark-gray);font-weight:600;font-size:13px}
+  .data-table td{padding:10px;border-bottom:1px solid var(--gray-bg);vertical-align:middle}
+  .data-table tr:hover td{background:#fafbfc}
+
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
+  .badge.PUBLISHED{background:var(--light-teal);color:var(--published)}
+  .badge.PENDING{background:#FEF5E7;color:var(--pending)}
+  .badge.REJECTED{background:#FADBD8;color:var(--rejected)}
+  .badge.DRAFT{background:#EAEDED;color:var(--draft)}
+
+  .pending-card{border:1px solid #eee;border-radius:var(--radius);padding:18px;margin-bottom:14px}
+  .pc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}
+  .pc-title{font-family:var(--font-heading);font-size:1.05rem;color:var(--primary)}
+  .pc-meta{font-size:13px;color:var(--dark-gray);margin-bottom:6px;display:flex;flex-wrap:wrap;gap:14px}
+  .pc-desc{font-size:14px;color:#444;margin:10px 0;line-height:1.6;max-height:80px;overflow:hidden}
+  .pc-files{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+  .pc-file{background:var(--gray-bg);border-radius:8px;padding:6px 12px;font-size:13px;color:var(--secondary);text-decoration:none}
+  .pc-actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+
+  .btn{border:none;border-radius:8px;padding:10px 18px;font-family:var(--font-main);font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+  .btn-approve{background:var(--published);color:#fff}
+  .btn-reject{background:var(--rejected);color:#fff}
+  .btn-primary{background:var(--primary);color:#fff}
+  .btn-accent{background:var(--accent);color:#fff}
+  .btn-ghost{background:var(--gray-bg);color:var(--dark-gray)}
+  .btn-sm{padding:6px 12px;font-size:13px}
+  .btn:disabled{opacity:.6;cursor:not-allowed}
+
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center;padding:20px}
+  .modal-overlay.show{display:flex}
+  .modal{background:#fff;border-radius:var(--radius);padding:28px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+  .modal-title{font-family:var(--font-heading);font-size:1.1rem;margin-bottom:16px;color:var(--primary)}
+  .modal textarea,.modal input,.modal select,.form textarea,.form input,.form select{width:100%;border:2px solid #e0e0e0;border-radius:8px;padding:10px 12px;font-family:var(--font-main);font-size:14px;outline:none;margin-bottom:14px;background:#fff}
+  .modal textarea:focus,.modal input:focus,.modal select:focus,.form input:focus,.form select:focus,.form textarea:focus{border-color:var(--secondary)}
+  .modal label,.form label{display:block;font-size:13px;font-weight:600;margin-bottom:5px;color:#333}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:600px){.form-row{grid-template-columns:1fr}}
+  .empty{text-align:center;color:#999;padding:40px 20px}
+  .loading{text-align:center;color:#999;padding:30px}
+  .chk-group{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .chk{display:flex;align-items:center;gap:6px;background:var(--gray-bg);border-radius:8px;padding:6px 12px;font-size:14px;cursor:pointer}
+  .chk input{width:auto;margin:0}
+  .file-list{margin:10px 0}
+  .file-item{display:flex;align-items:center;justify-content:space-between;background:var(--gray-bg);border-radius:8px;padding:8px 12px;margin-bottom:6px;font-size:13px}
+  .file-item .rm{color:var(--rejected);cursor:pointer;background:none;border:none;font-size:14px}
+
+  /* ════ MODERN THEME (override/enhance) ════ */
+  body{background:#eef2f6;background-image:radial-gradient(at 0% 0%,rgba(46,134,193,.06),transparent 40%),radial-gradient(at 100% 100%,rgba(20,143,119,.06),transparent 40%);background-attachment:fixed}
+  .sidebar{background:linear-gradient(180deg,#1A5276 0%,#15425e 100%);box-shadow:2px 0 16px rgba(0,0,0,.12)}
+  .nav-item{border-radius:0 22px 22px 0;margin-right:12px;transition:all .18s ease}
+  .nav-item.active{background:linear-gradient(90deg,rgba(20,143,119,.35),rgba(255,255,255,.12));border-left:3px solid var(--accent);font-weight:600}
+  .card{border:1px solid rgba(0,0,0,.04);box-shadow:0 4px 18px rgba(26,82,118,.07);transition:box-shadow .2s,transform .2s}
+  .card:hover{box-shadow:0 8px 28px rgba(26,82,118,.12)}
+  .kpi-card{border:1px solid rgba(0,0,0,.04);box-shadow:0 4px 18px rgba(26,82,118,.07);transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden}
+  .kpi-card:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(26,82,118,.15)}
+  .kpi-card::after{content:'';position:absolute;right:-20px;top:-20px;width:90px;height:90px;border-radius:50%;background:rgba(0,0,0,.02)}
+  .kpi-icon{box-shadow:0 6px 16px rgba(0,0,0,.12)}
+  .kpi-card.total .kpi-icon{background:linear-gradient(135deg,#2E86C1,#1A5276)}
+  .kpi-card.published .kpi-icon{background:linear-gradient(135deg,#27AE60,#148F77)}
+  .kpi-card.pending .kpi-icon{background:linear-gradient(135deg,#F5B041,#F39C12)}
+  .kpi-card.teachers .kpi-icon{background:linear-gradient(135deg,#1ABC9C,#148F77)}
+  .btn,.btn-login{box-shadow:0 4px 12px rgba(0,0,0,.10);transition:transform .15s,box-shadow .15s,filter .15s}
+  .btn:hover:not(:disabled),.btn-login:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 7px 18px rgba(0,0,0,.16);filter:brightness(1.05)}
+  .btn:active:not(:disabled){transform:translateY(0)}
+  .btn-primary{background:linear-gradient(135deg,#2E86C1,#1A5276)}
+  .btn-accent{background:linear-gradient(135deg,#1ABC9C,#148F77)}
+  .btn-approve{background:linear-gradient(135deg,#2ECC71,#27AE60)}
+  .btn-reject{background:linear-gradient(135deg,#EC7063,#E74C3C)}
+  .btn-login{background:linear-gradient(135deg,#2E86C1,#1A5276)}
+  .data-table thead th{background:#f7f9fb;position:sticky;top:0}
+  .data-table th:first-child{border-top-left-radius:8px}.data-table th:last-child{border-top-right-radius:8px}
+  .badge{box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .pending-card{box-shadow:0 3px 14px rgba(26,82,118,.06);border:1px solid rgba(0,0,0,.05);transition:box-shadow .2s}
+  .pending-card:hover{box-shadow:0 8px 24px rgba(26,82,118,.12)}
+  .page-title{position:relative;padding-left:14px}
+  .page-title::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:5px;height:26px;border-radius:4px;background:linear-gradient(180deg,var(--secondary),var(--accent))}
+  .form input:focus,.form select:focus,.form textarea:focus,.modal input:focus,.modal select:focus,.modal textarea:focus{box-shadow:0 0 0 3px rgba(46,134,193,.12)}
+  .chk{transition:all .15s}.chk:hover{background:var(--light-blue)}
+  .chk input:checked+span,.chk:has(input:checked){background:var(--light-teal);color:var(--accent);font-weight:600}
+  .empty i{opacity:.6}
+  .app-footer{margin:34px -28px -24px;padding:20px 28px;border-top:1px solid #e3e8ec;text-align:center;font-size:12.5px;color:var(--dark-gray);line-height:1.8;background:rgba(255,255,255,.55)}
+  .app-footer .cr{margin-top:8px;opacity:.85}
+  .app-footer .ver{font-size:11px;opacity:.6;margin-top:3px}
+  @media(max-width:900px){.app-footer{margin:34px -16px -24px;padding:18px 16px}}
+
+  /* ════ ROLE / AVATAR / PROFILE ════ */
+  .sidebar-user{display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .15s}
+  .sidebar-user:hover{background:rgba(0,0,0,.22)}
+  .avatar-wrap{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;color:#fff;overflow:hidden;border:2px solid rgba(255,255,255,.25)}
+  .avatar-wrap img{width:100%;height:100%;object-fit:cover}
+  .sidebar-user .info{min-width:0;flex:1}
+  .sidebar-user .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .role-chip{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;color:#fff;margin-top:3px}
+  .edit-hint{font-size:10px;opacity:.6;margin-top:2px}
+
+  /* avatar role colors */
+  .rl-SUPERADMIN{background:linear-gradient(135deg,#A569BD,#8E44AD)}
+  .rl-ADMIN{background:linear-gradient(135deg,#EC7063,#E74C3C)}
+  .rl-HEAD{background:linear-gradient(135deg,#F5B041,#E67E22)}
+  .rl-TEACHER{background:linear-gradient(135deg,#5DADE2,#2E86C1)}
+
+  /* ════ PUBLIC HEADER ════ */
+  .public-bar{display:none;position:sticky;top:0;z-index:150;background:rgba(255,255,255,.85);backdrop-filter:blur(10px);box-shadow:0 2px 14px rgba(26,82,118,.08);padding:12px 24px;align-items:center;justify-content:space-between;margin:-24px -28px 22px}
+  .public-bar.show{display:flex}
+  .public-brand{display:flex;align-items:center;gap:12px}
+  .public-brand .logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--secondary),var(--primary));color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden}
+  .sidebar-logo .icon{overflow:hidden}
+  .public-brand .nm{font-family:var(--font-heading);font-weight:700;color:var(--primary);font-size:17px;line-height:1.2}
+  .public-brand .sub{font-size:12px;color:var(--dark-gray)}
+
+  /* ════ INNOVATION CARDS (enhanced) ════ */
+  .inv-teacher{display:flex;align-items:center;gap:8px;font-size:13px;color:#444;margin:10px 0 4px}
+  .avatar-sm{width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;overflow:hidden}
+  .avatar-sm img{width:100%;height:100%;object-fit:cover}
+  .inv-top{background-size:cover!important;background-position:center!important}
+  .inv-top .ovl{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(0,0,0,.35));pointer-events:none}
+  .inv-new{position:absolute;top:10px;right:10px;background:linear-gradient(135deg,#F39C12,#E67E22);color:#fff;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.2);z-index:2}
+  .inv-dept{display:inline-block;background:var(--light-blue);color:var(--primary);padding:2px 9px;border-radius:6px;font-size:11px;font-weight:600;margin-bottom:8px}
+
+  /* filter bar */
+  .filter-bar{background:#fff;border-radius:var(--radius);box-shadow:0 4px 18px rgba(26,82,118,.07);padding:14px 16px;margin-bottom:20px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .filter-bar input,.filter-bar select{border:2px solid #e8edf1;border-radius:9px;padding:9px 12px;font-family:var(--font-main);font-size:14px;outline:none;background:#fafbfc;transition:border-color .15s}
+  .filter-bar input:focus,.filter-bar select:focus{border-color:var(--secondary);background:#fff}
+  .filter-bar .grow{flex:1;min-width:160px}
+  .filter-bar select{min-width:130px;cursor:pointer}
+  @media(max-width:600px){.filter-bar .grow,.filter-bar select{flex:1 1 100%;min-width:0}}
+
+  /* profile preview */
+  .profile-pic-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:18px}
+  .profile-pic{width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid var(--light-blue);background:var(--light-blue);display:flex;align-items:center;justify-content:center;font-size:40px;color:var(--secondary);overflow:hidden}
+  .profile-pic img{width:100%;height:100%;object-fit:cover}
+  .tab-bar{display:flex;gap:6px;margin-bottom:18px;border-bottom:2px solid var(--gray-bg)}
+  .tab-btn{background:none;border:none;padding:10px 16px;font-family:var(--font-main);font-size:14px;font-weight:600;color:var(--dark-gray);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
+  .tab-btn.active{color:var(--primary);border-bottom-color:var(--secondary)}
+
+  /* ════ TOAST & CONFIRM ════ */
+  #toastBox{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:10px}
+  .toast{background:#fff;border-radius:12px;box-shadow:0 10px 34px rgba(0,0,0,.18);padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:14px;min-width:280px;max-width:380px;border-left:4px solid var(--secondary);animation:toastIn .3s}
+  .toast.success{border-left-color:var(--published)}.toast.success>i{color:var(--published)}
+  .toast.error{border-left-color:var(--rejected)}.toast.error>i{color:var(--rejected)}
+  .toast.info{border-left-color:var(--secondary)}.toast.info>i{color:var(--secondary)}
+  .toast>i{font-size:20px}
+  @keyframes toastIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+  .modal{animation:modalIn .25s}
+  @keyframes modalIn{from{transform:translateY(20px) scale(.97);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+  .confirm-icon{width:54px;height:54px;border-radius:50%;background:var(--light-blue);color:var(--secondary);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 14px}
+  .confirm-icon.danger{background:#FADBD8;color:var(--rejected)}
+
+  /* ════ MODERN CONFIG CONTROLS ════ */
+  .cfg-item{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid var(--gray-bg)}
+  .cfg-item:last-of-type{border-bottom:none}
+  .cfg-label{font-size:14px;font-weight:600;color:#333}
+  .cfg-label small{display:block;font-weight:400;color:var(--dark-gray);font-size:12px;margin-top:2px}
+  .cfg-control{flex-shrink:0}
+  .cfg-control input[type=text],.cfg-control input[type=email],.cfg-control input[type=number]{width:240px;margin:0;border:2px solid #e0e0e0;border-radius:8px;padding:9px 12px;font-family:var(--font-main)}
+  .cfg-control input[type=color]{width:54px;height:40px;border:2px solid #e0e0e0;border-radius:8px;padding:2px;cursor:pointer;background:#fff}
+  .color-wrap{display:flex;align-items:center;gap:8px}
+  .color-wrap .hex{font-family:monospace;font-size:13px;color:var(--dark-gray)}
+  .switch{position:relative;display:inline-block;width:52px;height:28px}
+  .switch input{opacity:0;width:0;height:0}
+  .switch .slider{position:absolute;inset:0;background:#ccc;border-radius:28px;transition:.3s;cursor:pointer}
+  .switch .slider::before{content:'';position:absolute;height:20px;width:20px;left:4px;bottom:4px;background:#fff;border-radius:50%;transition:.3s}
+  .switch input:checked+.slider{background:var(--accent)}
+  .switch input:checked+.slider::before{transform:translateX(24px)}
+
+  /* ════ INNOVATION CARDS (browse) ════ */
+  .inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+  .inv-card{background:#fff;border-radius:var(--radius);box-shadow:0 4px 18px rgba(26,82,118,.08);overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column}
+  .inv-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(26,82,118,.16)}
+  .inv-top{height:90px;background:linear-gradient(135deg,var(--secondary),var(--primary));display:flex;align-items:center;justify-content:center;color:#fff;font-size:32px;position:relative}
+  .inv-type{position:absolute;top:10px;left:10px;background:rgba(255,255,255,.22);backdrop-filter:blur(4px);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+  .inv-body{padding:16px;flex:1;display:flex;flex-direction:column}
+  .inv-title{font-family:var(--font-heading);font-size:1rem;color:var(--primary);margin-bottom:8px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .inv-meta{font-size:12px;color:var(--dark-gray);margin-top:auto;display:flex;flex-wrap:wrap;gap:10px;padding-top:10px}
+
+  /* ════ PRINT / PDF ════ */
+  .print-only{display:none}
+  @media print{
+    .sidebar,.top-bar-right,.btn,.nav-item,#loginView,#toastBox,.modal-overlay{display:none!important}
+    .main{margin:0!important;width:100%!important;padding:0!important}
+    body{background:#fff!important}
+    .card,.kpi-card{box-shadow:none!important;border:1px solid #ddd!important;break-inside:avoid}
+    .print-only{display:block!important}
+    #globalPrintHeader{text-align:center;margin-bottom:20px;border-bottom:2px solid #1A5276;padding-bottom:12px}
+    #globalPrintHeader h1{font-family:var(--font-heading);color:#1A5276;font-size:20px}
+    #globalPrintHeader h2{font-family:var(--font-heading);color:#2E86C1;font-size:15px;font-weight:600;margin-top:2px}
+    #globalPrintHeader p{color:#555;font-size:12px;margin-top:4px}
+    #globalPrintFooter{margin-top:26px;padding-top:12px;border-top:1px solid #999;text-align:center;font-size:12px;color:#555;line-height:1.6}
+    .chart-wrap{height:240px!important}
+    .data-table{font-size:12px}
+    @page{margin:1.5cm}
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="loginView">
+  <div class="login-card">
+    <div class="login-head"><div class="logo"><i class="fas fa-lightbulb"></i></div><h2>KIMS</h2><p>ระบบบริหารจัดการนวัตกรรมทางการศึกษา<br>โรงเรียนกระแชงวิทยา</p></div>
+    <div class="login-body">
+      <div class="alert" id="loginAlert"><i class="fas fa-exclamation-circle"></i><span id="loginAlertTxt"></span></div>
+      <div class="hint"><i class="fas fa-info-circle" style="color:var(--secondary);margin-right:6px"></i>ใช้ <strong>เลขประจำตัวประชาชน 13 หลัก</strong> และรหัสผ่านที่ได้รับจากผู้ดูแลระบบ</div>
+      <label class="label"><i class="fas fa-id-card" style="color:var(--primary);margin-right:4px"></i>เลขประจำตัวประชาชน</label>
+      <div class="input-wrap"><i class="fas fa-id-card"></i><input type="text" id="idCard" placeholder="1234567890123" maxlength="13" inputmode="numeric"></div>
+      <label class="label"><i class="fas fa-lock" style="color:var(--primary);margin-right:4px"></i>รหัสผ่าน</label>
+      <div class="input-wrap"><i class="fas fa-lock"></i><input type="password" id="pw" placeholder="รหัสผ่าน"><button type="button" class="toggle-pw" onclick="togglePw()"><i class="fas fa-eye" id="eyeIcon"></i></button></div>
+      <button class="btn-login" id="loginBtn" onclick="doLogin()"><i class="fas fa-sign-in-alt" id="loginIcon"></i><span id="loginTxt">เข้าสู่ระบบ</span></button>
+    </div>
+  </div>
+  <a href="javascript:void(0)" onclick="enterPublic()" style="color:rgba(255,255,255,.92);margin-top:18px;text-decoration:none;font-size:14px"><i class="fas fa-arrow-left"></i> กลับไปดูคลังนวัตกรรม</a>
+</div>
+
+<!-- ══ APP SHELL ══ -->
+<div id="appShell" class="hidden">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="icon"><i class="fas fa-lightbulb"></i></div><div><div class="name">KIMS</div><div class="sub">โรงเรียนกระแชงวิทยา</div></div></div>
+    <div class="sidebar-user" id="sidebarUser"><div class="lbl">ผู้ใช้งาน</div><div class="nm">—</div><div class="rl"></div></div>
+    <div id="navContainer"></div>
+    <div class="sidebar-bottom" id="sidebarBottom"><button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> ออกจากระบบ</button></div>
+  </aside>
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+
+  <main class="main">
+    <div class="public-bar" id="publicBar">
+      <div class="public-brand"><div class="logo"><i class="fas fa-lightbulb"></i></div><div><div class="nm">KIMS · โรงเรียนกระแชงวิทยา</div><div class="sub">คลังนวัตกรรมทางการศึกษา</div></div></div>
+      <button class="btn btn-primary btn-sm" onclick="showLogin()"><i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ</button>
+    </div>
+    <div class="mobile-bar" id="mobileBar"><button class="ham" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button><span class="ttl">KIMS · กระแชงวิทยา</span></div>
+
+    <div id="globalPrintHeader" class="print-only">
+      <h1>โรงเรียนกระแชงวิทยา</h1>
+      <h2 id="printMenuName">รายงาน</h2>
+      <p id="printMeta"></p>
+    </div>
+
+    <!-- BROWSE (ทุก user) -->
+    <section id="view-browse" class="hidden">
+      <div class="top-bar"><div class="page-title"><i class="fas fa-compass"></i> คลังนวัตกรรม</div>
+        <div class="top-bar-right"><span id="browseCount" style="font-weight:600;color:var(--primary)"></span><button class="btn btn-primary btn-sm" onclick="printView('คลังนวัตกรรม')"><i class="fas fa-print"></i> พิมพ์</button></div>
+      </div>
+      <div class="filter-bar">
+        <input type="text" id="browseSearch" class="grow" placeholder="🔍 ค้นหาชื่อนวัตกรรม / ครู / แท็ก..." onkeyup="if(event.key==='Enter')loadBrowse()">
+        <select id="browseYear" onchange="loadBrowse()"></select>
+        <select id="browseType" onchange="loadBrowse()"></select>
+        <select id="browseDept" onchange="loadBrowse()"></select>
+        <select id="browseGrade" onchange="loadBrowse()"></select>
+        <button class="btn btn-ghost btn-sm" onclick="resetBrowseFilter()"><i class="fas fa-rotate-left"></i> ล้าง</button>
+      </div>
+      <div id="browseList" class="inv-grid"><div class="loading"><i class="fas fa-spinner spin"></i> กำลังโหลด...</div></div>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section id="view-dashboard" class="hidden">
+      <div class="top-bar"><div class="page-title"><i class="fas fa-chart-pie"></i> Dashboard ภาพรวม</div><div class="top-bar-right"><span id="lastUpdated">—</span><i class="fas fa-sync-alt clk" onclick="loadDashboard()" title="รีเฟรช"></i><button class="btn btn-primary btn-sm" onclick="printView('Dashboard ภาพรวมนวัตกรรม')"><i class="fas fa-print"></i> พิมพ์</button></div></div>
+      <div class="kpi-grid">
+        <div class="kpi-card total"><div class="kpi-icon"><i class="fas fa-layer-group"></i></div><div><div class="kpi-num" id="kpiTotal">—</div><div class="kpi-label">นวัตกรรมทั้งหมด</div></div></div>
+        <div class="kpi-card published"><div class="kpi-icon"><i class="fas fa-check-circle"></i></div><div><div class="kpi-num" id="kpiPublished">—</div><div class="kpi-label">เผยแพร่แล้ว</div></div></div>
+        <div class="kpi-card pending"><div class="kpi-icon"><i class="fas fa-hourglass-half"></i></div><div><div class="kpi-num" id="kpiPending">—</div><div class="kpi-label">รออนุมัติ</div></div></div>
+        <div class="kpi-card teachers"><div class="kpi-icon"><i class="fas fa-chalkboard-teacher"></i></div><div><div class="kpi-num" id="kpiTeachers">—</div><div class="kpi-label">ครูที่ส่งผลงาน</div></div></div>
+      </div>
+      <div class="charts-row">
+        <div class="card"><div class="card-title"><i class="fas fa-chart-pie"></i> สัดส่วนตามประเภท</div><div class="chart-wrap"><canvas id="typeChart"></canvas></div></div>
+        <div class="card"><div class="card-title"><i class="fas fa-chart-bar"></i> จำนวนตามปีการศึกษา</div><div class="chart-wrap"><canvas id="yearChart"></canvas></div></div>
+      </div>
+      <div class="charts-row">
+        <div class="card"><div class="card-title"><i class="fas fa-chart-bar"></i> ตามกลุ่มสาระ</div><div class="chart-wrap tall"><canvas id="deptChart"></canvas></div></div>
+        <div class="card"><div class="card-title"><i class="fas fa-chart-line"></i> แนวโน้มรายเดือน</div><div class="chart-wrap tall"><canvas id="trendChart"></canvas></div></div>
+      </div>
+      <div class="charts-row">
+        <div class="card"><div class="card-title"><i class="fas fa-fire" style="color:#E74C3C"></i> ยอดนิยม</div><div style="overflow-x:auto"><table class="data-table" id="topViewedTable"><thead><tr><th>#</th><th>ชื่อ</th><th>ครู</th><th><i class="fas fa-eye"></i></th></tr></thead><tbody><tr><td colspan="4" class="loading">—</td></tr></tbody></table></div></div>
+        <div class="card"><div class="card-title"><i class="fas fa-trophy" style="color:#F39C12"></i> ครูที่ส่งผลงานมากที่สุด</div><div style="overflow-x:auto"><table class="data-table" id="topTeachersTable"><thead><tr><th>#</th><th>ครู</th><th>กลุ่มสาระ</th><th>จำนวน</th></tr></thead><tbody><tr><td colspan="4" class="loading">—</td></tr></tbody></table></div></div>
+      </div>
+    </section>
+
+    <!-- APPROVE -->
+    <section id="view-approve" class="hidden">
+      <div class="top-bar"><div class="page-title"><i class="fas fa-clock"></i> รายการรออนุมัติ</div><div class="top-bar-right"><i class="fas fa-sync-alt clk" onclick="loadApprove()"></i><span id="approveCount">—</span></div></div>
+      <div class="card"><div id="pendingList"><div class="loading"><i class="fas fa-spinner spin"></i> กำลังโหลด...</div></div></div>
+    </section>
+
+    <!-- MANAGE (all innovations) -->
+    <section id="view-manage" class="hidden">
+      <div class="top-bar"><div class="page-title"><i class="fas fa-th-large"></i> นวัตกรรมทั้งหมด</div><div class="top-bar-right"><input type="text" id="manageSearch" placeholder="ค้นหา..." style="border:2px solid #e0e0e0;border-radius:8px;padding:7px 12px;font-family:var(--font-main)" onkeyup="if(event.key==='Enter')loadManage()"><i class="fas fa-sync-alt clk" onclick="loadManage()"></i><button class="btn btn-primary btn-sm" onclick="printView('รายการนวัตกรรมทั้งหมด')"><i class="fas fa-print"></i> พิมพ์</button></div></div>
+      <div class="card"><div style="overflow-x:auto"><table class="data-table" id="manageTable"><thead><tr><th>ชื่อนวัตกรรม</th><th>ครู</th><th>ประเภท</th><th>ปี</th><th>สถานะ</th><th><i class="fas fa-eye"></i></th><th>จัดการ</th></tr></thead><tbody><tr><td colspan="7" class="loading"><i class="fas fa-spinner spin"></i> กำลังโหลด...</td></tr></tbody></table></div></div>
+    </section>
+
+    <!-- USERS -->
+    <section id="view-users" class="hidden">
+      <div class="top-bar"><div class="page-title"><i class="fas fa-users"></i> จัดการผู้ใช้</div><div class="top-bar-right"><button class="btn btn-ghost btn-sm" onclick="printView('รายชื่อผู้ใช้งานระบบ')"><i class="fas fa-print"></i> พิมพ์</button><button class="btn btn-ghost btn-sm" onclick="openCsvModal()"><i class="fas fa-file-csv"></i> นำเข้า CSV</button><button class="btn btn-primary btn-sm" onclick="openUserModal()"><i class="fas fa-user-plus"></i> เพิ่มผู้ใช้</button></div></div>
+      <div class="card"><div style="overflow-x:auto"><table class="data-table" id="usersTable"><thead><tr><th>ชื่อ-สกุล</th><th>บทบาท</th><th>กลุ่มสาระ</th><th>อีเมล</th><th>สถานะ</th><th></th></tr></thead><tbody><tr><td colspan="6" class="loading"><i class="fas fa-spinner spin"></i> กำลังโหลด...</td></tr></tbody></table></div></div>
+    </section>
+
+    <!-- REPORTS -->
+    <section id="view-reports" class="hidden">
+      <div class="top-bar"><div class="page-title"><i class="fas fa-file-alt"></i> รายงาน</div><div class="top-bar-right"><select id="reportYear" onchange="loadReports()" style="border:2px solid #e0e0e0;border-radius:8px;padding:7px 12px;font-family:var(--font-main)"></select><button class="btn btn-accent btn-sm" onclick="exportReportExcel()"><i class="fas fa-file-excel"></i> Export Excel</button><button class="btn btn-primary btn-sm" onclick="printView('รายงานสรุปนวัตกรรม')"><i class="fas fa-file-pdf"></i> พิมพ์ / PDF</button></div></div>
+      <div class="kpi-grid">
+        <div class="kpi-card total"><div class="kpi-icon"><i class="fas fa-layer-group"></i></div><div><div class="kpi-num" id="rpTotal">—</div><div class="kpi-label">นวัตกรรมที่เผยแพร่</div></div></div>
+        <div class="kpi-card teachers"><div class="kpi-icon"><i class="fas fa-users"></i></div><div><div class="kpi-num" id="rpTeachers">—</div><div class="kpi-label">ครูที่มีผลงาน</div></div></div>
+      </div>
+      <div class="charts-row">
+        <div class="card"><div class="card-title"><i class="fas fa-chart-pie"></i> ตามประเภท</div><div class="chart-wrap"><canvas id="rpTypeChart"></canvas></div></div>
+        <div class="card"><div class="card-title"><i class="fas fa-chart-bar"></i> ตามกลุ่มสาระ</div><div class="chart-wrap"><canvas id="rpDeptChart"></canvas></div></div>
+      </div>
+      <div class="card"><div class="card-title"><i class="fas fa-user-graduate"></i> สรุปรายครู</div><div style="overflow-x:auto"><table class="data-table" id="rpTeacherTable"><thead><tr><th>#</th><th>ครู</th><th>กลุ่มสาระ</th><th>จำนวนผลงาน</th><th>ยอดเข้าชม</th></tr></thead><tbody><tr><td colspan="5" class="loading">—</td></tr></tbody></table></div></div>
+
+      <div class="card"><div class="card-title"><i class="fas fa-clipboard-check"></i> สรุปการอนุมัติ</div>
+        <div class="kpi-grid" style="margin-bottom:18px">
+          <div class="kpi-card published"><div class="kpi-icon"><i class="fas fa-check"></i></div><div><div class="kpi-num" id="apApproved">—</div><div class="kpi-label">อนุมัติแล้ว</div></div></div>
+          <div class="kpi-card pending"><div class="kpi-icon"><i class="fas fa-times"></i></div><div><div class="kpi-num" id="apRejected">—</div><div class="kpi-label">ถูกปฏิเสธ</div></div></div>
+          <div class="kpi-card teachers"><div class="kpi-icon"><i class="fas fa-hourglass-half"></i></div><div><div class="kpi-num" id="apPending">—</div><div class="kpi-label">รออนุมัติ</div></div></div>
+          <div class="kpi-card total"><div class="kpi-icon"><i class="fas fa-stopwatch"></i></div><div><div class="kpi-num" id="apAvg">—</div><div class="kpi-label">เวลาอนุมัติเฉลี่ย (วัน)</div></div></div>
+        </div>
+        <div class="chart-wrap tall"><canvas id="apChart"></canvas></div>
+      </div>
+    </section>
+
+    <!-- CONFIG -->
+    <section id="view-config" class="hidden">
+      <div class="top-bar"><div class="page-title"><i class="fas fa-cog"></i> ตั้งค่าระบบ</div></div>
+      <div class="card" style="max-width:640px">
+        <div class="alert" id="configAlert"><i class="fas fa-exclamation-circle"></i><span id="configAlertTxt"></span></div>
+        <div class="form" id="configForm"><div class="loading"><i class="fas fa-spinner spin"></i> กำลังโหลด...</div></div>
+      </div>
+    </section>
+
+    <!-- AUDIT LOG (super admin) -->
+    <section id="view-audit" class="hidden">
+      <div class="top-bar"><div class="page-title"><i class="fas fa-history"></i> รายงานการใช้งานระบบ</div><div class="top-bar-right"><i class="fas fa-sync-alt clk" onclick="loadAudit()"></i><button class="btn btn-primary btn-sm" onclick="printView('รายงานการใช้งานระบบ')"><i class="fas fa-print"></i> พิมพ์</button></div></div>
+      <div class="card"><div style="overflow-x:auto"><table class="data-table" id="auditTable"><thead><tr><th>เวลา</th><th>ผู้ใช้</th><th>การกระทำ</th><th>ประเภท</th><th>รายละเอียด</th></tr></thead><tbody><tr><td colspan="5" class="loading"><i class="fas fa-spinner spin"></i> กำลังโหลด...</td></tr></tbody></table></div></div>
+    </section>
+
+    <!-- MY INNOVATIONS (teacher) -->
+    <section id="view-my" class="hidden">
+      <div class="top-bar"><div class="page-title"><i class="fas fa-folder-open"></i> นวัตกรรมของฉัน</div><div class="top-bar-right"><button class="btn btn-ghost btn-sm" onclick="printView('นวัตกรรมของฉัน')"><i class="fas fa-print"></i> พิมพ์</button><button class="btn btn-accent btn-sm" onclick="showView('upload')"><i class="fas fa-plus"></i> เพิ่มนวัตกรรม</button><i class="fas fa-sync-alt clk" onclick="loadMy()"></i></div></div>
+      <div class="card"><div id="myList"><div class="loading"><i class="fas fa-spinner spin"></i> กำลังโหลด...</div></div></div>
+    </section>
+
+    <!-- UPLOAD (teacher) -->
+    <section id="view-upload" class="hidden">
+      <div class="top-bar"><div class="page-title"><i class="fas fa-cloud-upload-alt"></i> <span id="uploadTitle">เพิ่มนวัตกรรมใหม่</span></div></div>
+      <div class="card" style="max-width:760px">
+        <div class="alert" id="uploadAlert"><i class="fas fa-exclamation-circle"></i><span id="uploadAlertTxt"></span></div>
+        <input type="hidden" id="up_id">
+        <div class="form">
+          <label>ชื่อนวัตกรรม *</label><input type="text" id="up_title" maxlength="200">
+          <div class="form-row">
+            <div><label>ประเภท *</label><select id="up_type"></select></div>
+            <div><label>กลุ่มสาระ *</label><select id="up_department"></select></div>
+          </div>
+          <div class="form-row">
+            <div><label>ปีการศึกษา *</label><select id="up_year"></select></div>
+            <div><label>ภาคเรียน *</label><select id="up_semester"><option value="1">ภาคเรียนที่ 1</option><option value="2">ภาคเรียนที่ 2</option></select></div>
+          </div>
+          <label>ระดับชั้น * (เลือกได้หลายระดับ)</label>
+          <div class="chk-group" id="up_grades"></div>
+          <label>รายละเอียด *</label><textarea id="up_desc" rows="4" maxlength="2000"></textarea>
+          <label>แท็ก (คั่นด้วยจุลภาค)</label><input type="text" id="up_tags" placeholder="เช่น คณิตศาสตร์, เกม, ม.1">
+          <label>ภาพหน้าปก (ไม่บังคับ — แสดงบนการ์ดนวัตกรรม)</label>
+          <input type="file" id="up_coverFile" accept="image/*" onchange="handleCoverImage(event)">
+          <div id="up_coverPreview" style="margin:10px 0"></div>
+          <label>แนบไฟล์ (PDF/Word/รูป/วิดีโอ — สูงสุด 100MB/ไฟล์)</label>
+          <input type="file" id="up_files" multiple onchange="handleUploadFiles(event)">
+          <div class="file-list" id="up_fileList"></div>
+          <label>หรือระบุลิงก์ภายนอก (https://)</label><input type="url" id="up_link" placeholder="https://...">
+          <div class="modal-actions" style="justify-content:flex-start">
+            <button class="btn btn-primary" id="up_saveBtn" onclick="submitInnovation()"><i class="fas fa-paper-plane"></i> ส่งนวัตกรรม</button>
+            <button class="btn btn-ghost" onclick="resetUpload();showView('my')">ยกเลิก</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div id="globalPrintFooter" class="print-only"></div>
+    <footer class="app-footer" id="appFooter"></footer>
+  </main>
+</div>
+
+<!-- REJECT MODAL -->
+<div class="modal-overlay" id="rejectModal"><div class="modal">
+  <div class="modal-title"><i class="fas fa-times-circle" style="color:var(--rejected)"></i> ปฏิเสธนวัตกรรม</div>
+  <p style="font-size:14px;color:var(--dark-gray);margin-bottom:12px">ระบุเหตุผลเพื่อแจ้งให้ครูแก้ไข</p>
+  <textarea id="rejectReason" rows="4" placeholder="เช่น ไฟล์แนบไม่ครบ / เนื้อหาไม่ตรงประเภท..."></textarea>
+  <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('rejectModal')">ยกเลิก</button><button class="btn btn-reject" onclick="confirmReject()">ยืนยันปฏิเสธ</button></div>
+</div></div>
+
+<!-- USER MODAL -->
+<div class="modal-overlay" id="userModal"><div class="modal">
+  <div class="modal-title" id="userModalTitle"><i class="fas fa-user-plus"></i> เพิ่มผู้ใช้</div>
+  <div class="alert" id="userAlert"><i class="fas fa-exclamation-circle"></i><span id="userAlertTxt"></span></div>
+  <input type="hidden" id="u_user_id">
+  <div class="form-row">
+    <div><label>คำนำหน้า</label><select id="u_title"><option>นาย</option><option>นาง</option><option>นางสาว</option><option>ดร.</option></select></div>
+    <div><label>บทบาท</label><select id="u_role"><option value="TEACHER">ครู</option><option value="HEAD">หัวหน้ากลุ่มสาระ</option><option value="ADMIN">ผู้ดูแลระบบ</option><option value="SUPERADMIN">ผู้ดูแลสูงสุด</option></select></div>
+  </div>
+  <div class="form-row"><div><label>ชื่อ</label><input type="text" id="u_first_name"></div><div><label>นามสกุล</label><input type="text" id="u_last_name"></div></div>
+  <label>เลขประจำตัวประชาชน (13 หลัก)</label><input type="text" id="u_id_card" maxlength="13" inputmode="numeric">
+  <div class="form-row"><div><label>กลุ่มสาระ</label><select id="u_department"></select></div><div><label>เบอร์โทร</label><input type="text" id="u_phone"></div></div>
+  <label>อีเมล</label><input type="email" id="u_email">
+  <label id="u_pwLabel">รหัสผ่าน</label><input type="text" id="u_password" placeholder="อย่างน้อย 6 ตัวอักษร">
+  <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('userModal')">ยกเลิก</button><button class="btn btn-primary" id="userSaveBtn" onclick="saveUser()">บันทึก</button></div>
+</div></div>
+
+<!-- CSV MODAL -->
+<div class="modal-overlay" id="csvModal"><div class="modal" style="max-width:640px">
+  <div class="modal-title"><i class="fas fa-file-csv" style="color:var(--accent)"></i> นำเข้าผู้ใช้จากไฟล์ CSV</div>
+  <div class="alert" id="csvAlert"><i class="fas fa-exclamation-circle"></i><span id="csvAlertTxt"></span></div>
+  <div class="hint" style="margin-bottom:14px">
+    <strong>คอลัมน์ (แถวแรกเป็นหัวตาราง):</strong><br>
+    <code style="font-size:12px">id_card, title, first_name, last_name, role, department, email, phone, password</code><br>
+    <span style="font-size:12px;color:var(--dark-gray)">• role: TEACHER / HEAD / ADMIN / SUPERADMIN • password เว้นว่างได้<br>• จำเป็น: id_card, first_name, last_name, role, email</span>
+    <div style="margin-top:8px"><a href="javascript:void(0)" onclick="downloadCsvTemplate()" style="font-size:13px"><i class="fas fa-download"></i> ดาวน์โหลดไฟล์ตัวอย่าง</a></div>
+  </div>
+  <label>เลือกไฟล์ CSV</label><input type="file" id="csvFile" accept=".csv,text/csv" onchange="handleCsvFile(event)">
+  <label>รหัสผ่านเริ่มต้น (แถวที่ไม่ระบุ password)</label><input type="text" id="csvDefaultPw" value="Kcw@2568">
+  <div id="csvPreview" style="display:none">
+    <div style="font-size:14px;font-weight:600;margin:6px 0;color:var(--primary)">ตัวอย่าง (<span id="csvCount">0</span> รายการ)</div>
+    <div style="max-height:200px;overflow:auto;border:1px solid #eee;border-radius:8px"><table class="data-table" style="font-size:12px"><thead><tr><th>#</th><th>เลขบัตร</th><th>ชื่อ-สกุล</th><th>บทบาท</th><th>อีเมล</th></tr></thead><tbody id="csvPreviewBody"></tbody></table></div>
+  </div>
+  <div id="csvResult" style="display:none;margin-top:14px"></div>
+  <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('csvModal')">ปิด</button><button class="btn btn-primary" id="csvImportBtn" onclick="doImportCsv()" disabled><i class="fas fa-upload"></i> นำเข้า</button></div>
+</div></div>
+
+<!-- TOAST + CONFIRM + DETAIL -->
+<div id="toastBox"></div>
+<div class="modal-overlay" id="confirmModal"><div class="modal" style="max-width:400px;text-align:center">
+  <div class="confirm-icon" id="confirmIcon"><i class="fas fa-question"></i></div>
+  <div class="modal-title" id="confirmTitle" style="text-align:center">ยืนยันการทำรายการ</div>
+  <p id="confirmMsg" style="font-size:14px;color:#444;margin-bottom:20px;line-height:1.6"></p>
+  <div class="modal-actions" style="justify-content:center"><button class="btn btn-ghost" id="confirmNo">ยกเลิก</button><button class="btn btn-primary" id="confirmYes">ยืนยัน</button></div>
+</div></div>
+<div class="modal-overlay" id="detailModal"><div class="modal" style="max-width:660px"><div id="detailBody"></div>
+  <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('detailModal')">ปิด</button></div>
+</div></div>
+
+<!-- PROFILE MODAL -->
+<div class="modal-overlay" id="profileModal"><div class="modal" style="max-width:480px">
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tabProfile" onclick="switchProfileTab('profile')"><i class="fas fa-user"></i> โปรไฟล์</button>
+    <button class="tab-btn" id="tabPassword" onclick="switchProfileTab('password')"><i class="fas fa-key"></i> เปลี่ยนรหัสผ่าน</button>
+  </div>
+  <div class="alert" id="profileAlert"><i class="fas fa-exclamation-circle"></i><span id="profileAlertTxt"></span></div>
+
+  <div id="profileTabContent">
+    <div class="profile-pic-wrap">
+      <div class="profile-pic" id="profilePic"><i class="fas fa-user"></i></div>
+      <input type="file" id="profileFile" accept="image/*" style="display:none" onchange="handleProfileImage(event)">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('profileFile').click()" id="profilePicBtn"><i class="fas fa-camera"></i> เปลี่ยนรูปโปรไฟล์</button>
+    </div>
+    <div class="form-row"><div><label>คำนำหน้า</label><select id="pf_title"><option>นาย</option><option>นาง</option><option>นางสาว</option><option>ดร.</option></select></div><div><label>ชื่อ</label><input type="text" id="pf_first_name"></div></div>
+    <label>นามสกุล</label><input type="text" id="pf_last_name">
+    <div class="form-row"><div><label>อีเมล</label><input type="email" id="pf_email"></div><div><label>เบอร์โทร</label><input type="text" id="pf_phone"></div></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('profileModal')">ปิด</button><button class="btn btn-primary" id="pf_saveBtn" onclick="saveProfile()"><i class="fas fa-save"></i> บันทึก</button></div>
+  </div>
+
+  <div id="passwordTabContent" style="display:none">
+    <label>รหัสผ่านเดิม</label><input type="password" id="pw_old">
+    <label>รหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร)</label><input type="password" id="pw_new">
+    <label>ยืนยันรหัสผ่านใหม่</label><input type="password" id="pw_confirm">
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('profileModal')">ปิด</button><button class="btn btn-primary" id="pw_saveBtn" onclick="savePassword()"><i class="fas fa-key"></i> เปลี่ยนรหัสผ่าน</button></div>
+  </div>
+</div></div>
+
+<script>
+// ════════ STATE & CONSTANTS ════════
+var state={user:null,token:'',users:[]};
+var charts={};var rejectingId=null;var csvRows=[];var uploadedFiles=[];
+var INNOVATION_TYPES={'01':'สื่อการสอน / CAI','02':'วิจัยในชั้นเรียน','03':'แผนการจัดการเรียนรู้','04':'ชุดกิจกรรม / ใบงาน','05':'เทคโนโลยีทางการศึกษา','99':'อื่นๆ'};
+var DEPARTMENTS=['ภาษาไทย','คณิตศาสตร์','วิทยาศาสตร์และเทคโนโลยี','สังคมศึกษา ศาสนา และวัฒนธรรม','สุขศึกษาและพลศึกษา','ศิลปะ','การงานอาชีพ','ภาษาต่างประเทศ','กิจกรรมพัฒนาผู้เรียน'];
+var GRADE_LEVELS=['ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'];
+var typeColors=['#1A5276','#2E86C1','#148F77','#F39C12','#8E44AD','#85929E'];
+var chartFont={family:'Sarabun',size:13};
+var chartDefaults={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:chartFont}},tooltip:{titleFont:chartFont,bodyFont:chartFont}}};
+function thaiYears(){var y=new Date().getFullYear()+543;var a=[];for(var i=0;i<=5;i++)a.push(y-i);return a;}
+
+// เมนูตามบทบาท (แบ่งเป็น section) — ทุกบทบาทเพิ่ม/ดูนวัตกรรมของตัวเองได้
+var MI={
+  browse:{v:'browse',i:'fa-compass',t:'คลังนวัตกรรม'},
+  my:{v:'my',i:'fa-folder-open',t:'นวัตกรรมของฉัน'},
+  up:{v:'upload',i:'fa-cloud-upload-alt',t:'เพิ่มนวัตกรรม'},
+  dash:{v:'dashboard',i:'fa-chart-pie',t:'Dashboard'},
+  appr:{v:'approve',i:'fa-clock',t:'รออนุมัติ',badge:true},
+  mng:{v:'manage',i:'fa-th-large',t:'นวัตกรรมทั้งหมด'},
+  usr:{v:'users',i:'fa-users',t:'จัดการผู้ใช้'},
+  rep:{v:'reports',i:'fa-file-alt',t:'รายงาน'},
+  audit:{v:'audit',i:'fa-history',t:'การใช้งานระบบ'},
+  cfg:{v:'config',i:'fa-cog',t:'ตั้งค่าระบบ'}
+};
+var MENUS={
+  TEACHER:[{label:'นวัตกรรม',items:[MI.browse,MI.my,MI.up]}],
+  HEAD:[{label:'นวัตกรรม',items:[MI.browse,MI.my,MI.up]},{label:'ภาพรวม',items:[MI.dash,MI.mng]}],
+  ADMIN:[{label:'นวัตกรรม',items:[MI.browse,MI.my,MI.up]},{label:'บริหารระบบ',items:[MI.dash,MI.appr,MI.mng,MI.usr,MI.rep]}],
+  SUPERADMIN:[{label:'นวัตกรรม',items:[MI.browse,MI.my,MI.up]},{label:'บริหารระบบ',items:[MI.dash,MI.appr,MI.mng,MI.usr,MI.rep,MI.audit,MI.cfg]}]
+};
+var ALL_VIEWS=['browse','dashboard','approve','manage','users','reports','audit','config','my','upload'];
+var ROLE_META={
+  SUPERADMIN:{i:'fa-crown',t:'ผู้ดูแลระบบสูงสุด'},
+  ADMIN:{i:'fa-user-shield',t:'ผู้ดูแลระบบ'},
+  HEAD:{i:'fa-user-tie',t:'หัวหน้ากลุ่มสาระ'},
+  TEACHER:{i:'fa-chalkboard-teacher',t:'ครู'}
+};
+function roleMeta(r){return ROLE_META[r]||{i:'fa-user',t:r||'ผู้ใช้'};}
+function avatarHtml(profileUrl,role,cls){
+  cls=cls||'avatar-wrap';var m=roleMeta(role);
+  var inner=profileUrl?'<img src="'+esc(profileUrl)+'" referrerpolicy="no-referrer">':'<i class="fas '+m.i+'"></i>';
+  return '<div class="'+cls+' rl-'+(role||'TEACHER')+'">'+inner+'</div>';
+}
+var pendingCoverUrl='';
+
+// ════════ BACKEND BRIDGE ════════
+function callAPI(action,params){
+  return new Promise(function(resolve,reject){
+    var payload=Object.assign({action:action,token:state.token||''},params||{});
+    google.script.run.withSuccessHandler(resolve).withFailureHandler(function(e){reject(e);}).handleRequest(payload);
+  });
+}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+// ════════ INIT ════════
+window.addEventListener('DOMContentLoaded',function(){
+  // dropdowns
+  document.getElementById('u_department').innerHTML='<option value="">— ไม่ระบุ —</option>'+DEPARTMENTS.map(function(d){return '<option>'+esc(d)+'</option>';}).join('');
+  document.getElementById('up_department').innerHTML='<option value="">— เลือก —</option>'+DEPARTMENTS.map(function(d){return '<option>'+esc(d)+'</option>';}).join('');
+  document.getElementById('up_type').innerHTML='<option value="">— เลือก —</option>'+Object.keys(INNOVATION_TYPES).map(function(k){return '<option value="'+k+'">'+esc(INNOVATION_TYPES[k])+'</option>';}).join('');
+  document.getElementById('up_year').innerHTML=thaiYears().map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join('');
+  document.getElementById('up_grades').innerHTML=GRADE_LEVELS.map(function(g){return '<label class="chk"><input type="checkbox" value="'+g+'"> '+g+'</label>';}).join('');
+  document.getElementById('reportYear').innerHTML=thaiYears().map(function(y){return '<option value="'+y+'">ปีการศึกษา '+y+'</option>';}).join('');
+  document.getElementById('browseType').innerHTML='<option value="">ทุกประเภท</option>'+Object.keys(INNOVATION_TYPES).map(function(k){return '<option value="'+k+'">'+esc(INNOVATION_TYPES[k])+'</option>';}).join('');
+  document.getElementById('browseYear').innerHTML='<option value="">ทุกปีการศึกษา</option>'+thaiYears().map(function(y){return '<option value="'+y+'">ปี '+y+'</option>';}).join('');
+  document.getElementById('browseDept').innerHTML='<option value="">ทุกกลุ่มสาระ</option>'+DEPARTMENTS.map(function(d){return '<option>'+esc(d)+'</option>';}).join('');
+  document.getElementById('browseGrade').innerHTML='<option value="">ทุกระดับชั้น</option>'+GRADE_LEVELS.map(function(g){return '<option>'+esc(g)+'</option>';}).join('');
+
+  // confirm dialog handlers
+  document.getElementById('confirmYes').onclick=function(){closeModal('confirmModal');if(_confirmResolve){_confirmResolve(true);_confirmResolve=null;}};
+  document.getElementById('confirmNo').onclick=function(){closeModal('confirmModal');if(_confirmResolve){_confirmResolve(false);_confirmResolve=null;}};
+
+  // โหลดค่า config สาธารณะ (ชื่อโรงเรียน + footer) สำหรับการพิมพ์
+  callAPI('getPublicConfig').then(function(res){ if(res&&res.success){ state.publicConfig=res.data; renderFooter(); applyBranding(); } });
+  renderFooter();
+
+  var saved=sessionStorage.getItem('KIMS_TOKEN');
+  if(saved){state.token=saved;callAPI('getCurrentUser',{token:saved}).then(function(res){if(res&&res.success){enterApp(res.data);}else{enterPublic();}}).catch(function(){enterPublic();});}
+  else{enterPublic();}
+  document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+  document.getElementById('idCard').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('pw').focus();});
+});
+function showLogin(){document.getElementById('appShell').classList.add('hidden');document.getElementById('publicBar').classList.remove('show');document.getElementById('loginView').classList.remove('hidden');document.getElementById('idCard').focus();}
+function enterPublic(){
+  state.user=null;state.token='';sessionStorage.removeItem('KIMS_TOKEN');
+  document.getElementById('loginView').classList.add('hidden');
+  document.getElementById('appShell').classList.remove('hidden');
+  document.querySelector('.sidebar').classList.add('hidden');
+  document.getElementById('mobileBar').classList.remove('on');
+  var main=document.querySelector('.main');main.style.marginLeft='0';main.style.width='100%';
+  document.getElementById('publicBar').classList.add('show');
+  showView('browse');
+}
+
+// ════════ LOGIN ════════
+function togglePw(){var pw=document.getElementById('pw'),ic=document.getElementById('eyeIcon');if(pw.type==='password'){pw.type='text';ic.className='fas fa-eye-slash';}else{pw.type='password';ic.className='fas fa-eye';}}
+function loginAlert(t,m){var el=document.getElementById('loginAlert');el.className='alert '+t;document.getElementById('loginAlertTxt').textContent=m;}
+function loginLoading(on){document.getElementById('loginBtn').disabled=on;document.getElementById('loginIcon').className=on?'fas fa-spinner spin':'fas fa-sign-in-alt';document.getElementById('loginTxt').textContent=on?'กำลังเข้าสู่ระบบ...':'เข้าสู่ระบบ';}
+function doLogin(){
+  var idCard=document.getElementById('idCard').value.replace(/\D/g,'').trim();var pw=document.getElementById('pw').value;
+  if(idCard.length!==13){loginAlert('error','กรุณากรอกเลขประจำตัวประชาชน 13 หลัก');return;}
+  if(!pw){loginAlert('error','กรุณากรอกรหัสผ่าน');return;}
+  loginLoading(true);document.getElementById('loginAlert').className='alert';
+  callAPI('login',{id_card:idCard,password:pw}).then(function(res){
+    loginLoading(false);
+    if(res&&res.success){
+      state.token=res.data.token;sessionStorage.setItem('KIMS_TOKEN',res.data.token);
+      loginAlert('success','เข้าสู่ระบบสำเร็จ');
+      callAPI('getCurrentUser',{token:state.token}).then(function(r2){enterApp(r2&&r2.success?r2.data:{full_name:res.data.full_name,role:res.data.role,department:res.data.department});});
+    }else{loginAlert('error',(res&&res.error)||'เข้าสู่ระบบไม่สำเร็จ');document.getElementById('pw').value='';}
+  }).catch(function(){loginLoading(false);loginAlert('error','เกิดข้อผิดพลาดในการเชื่อมต่อ');});
+}
+function logout(){callAPI('logout',{token:state.token}).catch(function(){});document.getElementById('pw').value='';showToast('ออกจากระบบแล้ว','success');enterPublic();}
+
+// ════════ APP / ROUTER ════════
+function enterApp(user){
+  state.user=user;
+  document.getElementById('loginView').classList.add('hidden');
+  document.getElementById('publicBar').classList.remove('show');
+  document.getElementById('appShell').classList.remove('hidden');
+  document.querySelector('.sidebar').classList.remove('hidden');
+  document.getElementById('mobileBar').classList.add('on');
+  var main=document.querySelector('.main');main.style.marginLeft='';main.style.width='';
+  var m=roleMeta(user.role);
+  var su=document.getElementById('sidebarUser');
+  su.onclick=openProfile;
+  su.innerHTML=avatarHtml(user.profile_url,user.role)+'<div class="info"><div class="nm">'+esc(user.full_name||user.name||'')+'</div><span class="role-chip rl-'+user.role+'"><i class="fas '+m.i+'"></i> '+esc(m.t)+'</span><div class="edit-hint"><i class="fas fa-pen"></i> แก้ไขโปรไฟล์</div></div>';
+  document.getElementById('sidebarBottom').innerHTML='<button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> ออกจากระบบ</button>';
+  var sections=MENUS[user.role]||MENUS.TEACHER;
+  document.getElementById('navContainer').innerHTML=sections.map(function(sec){
+    return '<div class="nav-section"><div class="nav-label">'+esc(sec.label)+'</div>'+
+      sec.items.map(function(mi){return '<button class="nav-item" data-view="'+mi.v+'" onclick="showView(\''+mi.v+'\')"><i class="fas '+mi.i+' fa-fw"></i> '+mi.t+(mi.badge?' <span class="badge-nav hidden" id="pendingBadge">0</span>':'')+'</button>';}).join('')+
+      '</div>';
+  }).join('');
+  var defaultView=['ADMIN','SUPERADMIN'].includes(user.role)?'dashboard':'my';
+  showView(defaultView);
+}
+function showView(name){
+  closeSidebar();
+  ALL_VIEWS.forEach(function(v){var el=document.getElementById('view-'+v);if(el)el.classList.toggle('hidden',v!==name);});
+  document.querySelectorAll('.nav-item').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-view')===name);});
+  if(name==='dashboard')loadDashboard();
+  else if(name==='browse')loadBrowse();
+  else if(name==='approve')loadApprove();
+  else if(name==='manage')loadManage();
+  else if(name==='users')loadUsers();
+  else if(name==='reports')loadReports();
+  else if(name==='audit')loadAudit();
+  else if(name==='config')loadConfig();
+  else if(name==='my')loadMy();
+  else if(name==='upload'){if(!document.getElementById('up_id').value)resetUpload();}
+}
+
+// ════════ DASHBOARD ════════
+function loadDashboard(){
+  document.getElementById('lastUpdated').textContent='กำลังโหลด...';
+  callAPI('getDashboardData').then(function(res){
+    if(!res||!res.success){document.getElementById('lastUpdated').textContent=(res&&res.error)||'โหลดไม่สำเร็จ';return;}
+    var d=res.data;
+    document.getElementById('kpiTotal').textContent=(d.kpi.total||0).toLocaleString();
+    document.getElementById('kpiPublished').textContent=(d.kpi.published||0).toLocaleString();
+    document.getElementById('kpiPending').textContent=(d.kpi.pending||0).toLocaleString();
+    document.getElementById('kpiTeachers').textContent=(d.kpi.active_teachers||0).toLocaleString();
+    setBadge(d.kpi.pending);
+    renderChart('type','doughnut',d.byType.map(function(t){return t.name;}),d.byType.map(function(t){return t.count;}),{cutout:'60%',plugins:{legend:{position:'bottom',labels:{font:chartFont,padding:8,boxWidth:12}}}},typeColors,'typeChart');
+    renderChart('year','bar',d.byYear.map(function(y){return y.year;}),d.byYear.map(function(y){return y.count;}),{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}},'#2E86C1','yearChart');
+    renderChart('dept','bar',d.byDept.map(function(x){return x.dept;}),d.byDept.map(function(x){return x.count;}),{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0}}}},'#148F77','deptChart');
+    renderTrend(d.monthlyTrend);
+    fillRank('topViewedTable',d.topViewed,function(r){return [esc(r.title),esc(r.teacher_name),r.view_count||0];});
+    fillRank('topTeachersTable',d.topTeachers,function(r){return [esc(r.teacher_name),esc(r.department||''),r.count||0];});
+    document.getElementById('lastUpdated').textContent='อัปเดต: '+new Date().toLocaleTimeString('th-TH');
+  }).catch(function(){document.getElementById('lastUpdated').textContent='เกิดข้อผิดพลาด';});
+}
+function setBadge(p){var b=document.getElementById('pendingBadge');if(!b)return;if(p>0){b.classList.remove('hidden');b.textContent=p;}else{b.classList.add('hidden');}}
+function renderChart(key,type,labels,data,opts,colors,canvasId){
+  var ctx=document.getElementById(canvasId);if(!ctx)return;if(charts[key])charts[key].destroy();
+  charts[key]=new Chart(ctx,{type:type,data:{labels:labels,datasets:[{label:'จำนวน',data:data,backgroundColor:colors,borderRadius:6,borderWidth:type==='doughnut'?2:0,borderColor:'#fff'}]},options:Object.assign({},chartDefaults,opts)});
+}
+function renderTrend(trend){
+  var ctx=document.getElementById('trendChart');if(!ctx)return;if(charts.trend)charts.trend.destroy();
+  charts.trend=new Chart(ctx,{type:'line',data:{labels:trend.map(function(m){return m.label;}),datasets:[{label:'นวัตกรรมใหม่',data:trend.map(function(m){return m.count;}),borderColor:'#1A5276',backgroundColor:'rgba(46,134,193,.15)',fill:true,tension:.35}]},options:Object.assign({},chartDefaults,{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}})});
+}
+function fillRank(tableId,rows,cols){
+  var tb=document.querySelector('#'+tableId+' tbody');
+  if(!rows||!rows.length){tb.innerHTML='<tr><td colspan="4" class="empty">ยังไม่มีข้อมูล</td></tr>';return;}
+  tb.innerHTML=rows.map(function(r,i){return '<tr><td>'+(i+1)+'</td>'+cols(r).map(function(c){return '<td>'+c+'</td>';}).join('')+'</tr>';}).join('');
+}
+
+// ════════ APPROVE ════════
+function loadApprove(){
+  var box=document.getElementById('pendingList');box.innerHTML='<div class="loading"><i class="fas fa-spinner spin"></i> กำลังโหลด...</div>';
+  callAPI('getPendingList').then(function(res){
+    if(!res||!res.success){box.innerHTML='<div class="empty">'+((res&&res.error)||'โหลดไม่สำเร็จ')+'</div>';return;}
+    var list=res.data.innovations||[];
+    document.getElementById('approveCount').textContent=list.length+' รายการ';setBadge(list.length);
+    if(!list.length){box.innerHTML='<div class="empty"><i class="fas fa-check-circle" style="font-size:32px;color:var(--published)"></i><br><br>ไม่มีรายการรออนุมัติ</div>';return;}
+    box.innerHTML=list.map(renderPendingCard).join('');
+  }).catch(function(){box.innerHTML='<div class="empty">เกิดข้อผิดพลาด</div>';});
+}
+function renderPendingCard(r){
+  var files=(r.file_urls||[]).map(function(u,i){return '<a class="pc-file" href="'+esc(u)+'" target="_blank"><i class="fas fa-paperclip"></i> '+esc((r.file_names&&r.file_names[i])||('ไฟล์ '+(i+1)))+'</a>';}).join('');
+  var link=r.link_url?'<a class="pc-file" href="'+esc(r.link_url)+'" target="_blank"><i class="fas fa-link"></i> ลิงก์ภายนอก</a>':'';
+  return '<div class="pending-card"><div class="pc-head"><div class="pc-title">'+esc(r.title)+'</div><span class="badge PENDING">รออนุมัติ</span></div>'+
+    '<div class="pc-meta"><span><i class="fas fa-user"></i> '+esc(r.teacher_name)+'</span><span><i class="fas fa-tag"></i> '+esc(r.type_name)+'</span><span><i class="fas fa-book"></i> '+esc(r.department||'-')+'</span><span><i class="fas fa-calendar"></i> '+esc(r.academic_year||'-')+'</span></div>'+
+    '<div class="pc-desc">'+esc(r.description||'')+'</div>'+((files||link)?'<div class="pc-files">'+files+link+'</div>':'')+
+    '<div class="pc-actions"><button class="btn btn-approve" onclick="approveItem(\''+r.innovation_id+'\')"><i class="fas fa-check"></i> อนุมัติ</button>'+
+    '<button class="btn btn-reject" onclick="openReject(\''+r.innovation_id+'\')"><i class="fas fa-times"></i> ปฏิเสธ</button></div></div>';
+}
+function approveItem(id){showConfirm('ยืนยันการอนุมัตินวัตกรรมนี้?',{title:'อนุมัตินวัตกรรม',yesText:'อนุมัติ'}).then(function(ok){if(!ok)return;callAPI('approveInnovation',{innovation_id:id}).then(function(res){if(res&&res.success){showToast(res.message||'อนุมัติเรียบร้อยแล้ว','success');loadApprove();}else{showToast((res&&res.error)||'ไม่สำเร็จ','error');}}).catch(function(){showToast('เกิดข้อผิดพลาด','error');});});}
+function openReject(id){rejectingId=id;document.getElementById('rejectReason').value='';document.getElementById('rejectModal').classList.add('show');}
+function confirmReject(){var reason=document.getElementById('rejectReason').value.trim();if(!reason){showToast('กรุณาระบุเหตุผล','error');return;}callAPI('rejectInnovation',{innovation_id:rejectingId,reason:reason}).then(function(res){closeModal('rejectModal');if(res&&res.success){showToast(res.message||'ปฏิเสธเรียบร้อยแล้ว','success');loadApprove();}else{showToast((res&&res.error)||'ไม่สำเร็จ','error');}}).catch(function(){showToast('เกิดข้อผิดพลาด','error');});}
+
+// ════════ MANAGE (all innovations) ════════
+function loadManage(){
+  var tb=document.querySelector('#manageTable tbody');tb.innerHTML='<tr><td colspan="6" class="loading"><i class="fas fa-spinner spin"></i> กำลังโหลด...</td></tr>';
+  var search=document.getElementById('manageSearch').value.trim();
+  callAPI('getAllInnovations',{search:search,limit:200}).then(function(res){
+    if(!res||!res.success){tb.innerHTML='<tr><td colspan="7" class="empty">'+((res&&res.error)||'โหลดไม่สำเร็จ')+'</td></tr>';return;}
+    var list=res.data.innovations||[];
+    state.manageList=list;
+    if(!list.length){tb.innerHTML='<tr><td colspan="7" class="empty">ไม่พบนวัตกรรม</td></tr>';return;}
+    tb.innerHTML=list.map(function(r){
+      return '<tr><td>'+esc(r.title)+'</td><td>'+esc(r.teacher_name)+'</td><td>'+esc(r.type_name)+'</td><td>'+esc(r.academic_year||'-')+'</td>'+
+        '<td><span class="badge '+r.status+'">'+esc(r.status_label||r.status)+'</span></td><td>'+(r.view_count||0)+'</td>'+
+        '<td style="white-space:nowrap"><button class="btn btn-ghost btn-sm" onclick="editInnovation(\''+r.innovation_id+'\',\'manage\')"><i class="fas fa-edit"></i></button> <button class="btn btn-ghost btn-sm" onclick="deleteInnovation(\''+r.innovation_id+'\')"><i class="fas fa-trash"></i></button></td></tr>';
+    }).join('');
+  }).catch(function(){tb.innerHTML='<tr><td colspan="7" class="empty">เกิดข้อผิดพลาด</td></tr>';});
+}
+
+// ════════ USERS ════════
+function loadUsers(){
+  var tb=document.querySelector('#usersTable tbody');tb.innerHTML='<tr><td colspan="6" class="loading"><i class="fas fa-spinner spin"></i> กำลังโหลด...</td></tr>';
+  callAPI('getUsers').then(function(res){
+    if(!res||!res.success){tb.innerHTML='<tr><td colspan="6" class="empty">'+((res&&res.error)||'โหลดไม่สำเร็จ')+'</td></tr>';return;}
+    state.users=res.data.users||[];
+    if(!state.users.length){tb.innerHTML='<tr><td colspan="6" class="empty">ยังไม่มีผู้ใช้</td></tr>';return;}
+    tb.innerHTML=state.users.map(function(u){
+      return '<tr><td>'+esc(u.full_name)+'</td><td>'+esc(u.role_label)+'</td><td>'+esc(u.department||'-')+'</td><td>'+esc(u.email||'-')+'</td>'+
+        '<td><span class="badge '+(u.is_active?'PUBLISHED':'REJECTED')+'">'+(u.is_active?'ใช้งาน':'ระงับ')+'</span></td>'+
+        '<td style="white-space:nowrap"><button class="btn btn-ghost btn-sm" onclick="editUser(\''+u.user_id+'\')"><i class="fas fa-edit"></i></button> '+
+        '<button class="btn btn-ghost btn-sm" onclick="toggleUser(\''+u.user_id+'\','+(u.is_active?'false':'true')+')"><i class="fas fa-'+(u.is_active?'ban':'check')+'"></i></button></td></tr>';
+    }).join('');
+  }).catch(function(){tb.innerHTML='<tr><td colspan="6" class="empty">เกิดข้อผิดพลาด</td></tr>';});
+}
+function userAlert(m){var el=document.getElementById('userAlert');if(m){el.className='alert error';document.getElementById('userAlertTxt').textContent=m;}else{el.className='alert';}}
+function openUserModal(){
+  document.getElementById('userModalTitle').innerHTML='<i class="fas fa-user-plus"></i> เพิ่มผู้ใช้';
+  document.getElementById('u_user_id').value='';
+  ['u_first_name','u_last_name','u_id_card','u_phone','u_email','u_password'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('u_title').value='นาย';document.getElementById('u_role').value='TEACHER';document.getElementById('u_department').value='';
+  document.getElementById('u_id_card').disabled=false;document.getElementById('u_pwLabel').textContent='รหัสผ่าน';document.getElementById('u_password').placeholder='อย่างน้อย 6 ตัวอักษร';
+  userAlert('');document.getElementById('userModal').classList.add('show');
+}
+function editUser(userId){
+  var u=null;for(var i=0;i<state.users.length;i++){if(state.users[i].user_id===userId){u=state.users[i];break;}}
+  if(!u){showToast('ไม่พบข้อมูลผู้ใช้','error');return;}
+  document.getElementById('userModalTitle').innerHTML='<i class="fas fa-user-edit"></i> แก้ไขผู้ใช้';
+  document.getElementById('u_user_id').value=u.user_id;document.getElementById('u_title').value=u.title||'นาย';document.getElementById('u_role').value=u.role;
+  document.getElementById('u_first_name').value=u.first_name||'';document.getElementById('u_last_name').value=u.last_name||'';
+  document.getElementById('u_id_card').value=String(u.id_card||'').replace(/\D/g,'');document.getElementById('u_id_card').disabled=true;
+  document.getElementById('u_department').value=u.department||'';document.getElementById('u_phone').value=u.phone||'';document.getElementById('u_email').value=u.email||'';
+  document.getElementById('u_password').value='';document.getElementById('u_pwLabel').textContent='รหัสผ่านใหม่ (เว้นว่างถ้าไม่เปลี่ยน)';document.getElementById('u_password').placeholder='เว้นว่างถ้าไม่เปลี่ยน';
+  userAlert('');document.getElementById('userModal').classList.add('show');
+}
+function saveUser(){
+  var uid=document.getElementById('u_user_id').value;
+  var data={title:document.getElementById('u_title').value,role:document.getElementById('u_role').value,first_name:document.getElementById('u_first_name').value.trim(),last_name:document.getElementById('u_last_name').value.trim(),department:document.getElementById('u_department').value,phone:document.getElementById('u_phone').value.trim(),email:document.getElementById('u_email').value.trim()};
+  if(!data.first_name||!data.last_name){userAlert('กรุณากรอกชื่อ-นามสกุล');return;}
+  if(!data.email){userAlert('กรุณากรอกอีเมล');return;}
+  var btn=document.getElementById('userSaveBtn');btn.disabled=true;var pw=document.getElementById('u_password').value;var action,payload;
+  if(uid){action='updateUser';payload=Object.assign({user_id:uid},data);if(pw)payload.new_password=pw;}
+  else{var idc=document.getElementById('u_id_card').value.replace(/\D/g,'');if(idc.length!==13){userAlert('เลขประจำตัวประชาชนต้อง 13 หลัก');btn.disabled=false;return;}if(!pw||pw.length<6){userAlert('รหัสผ่านอย่างน้อย 6 ตัวอักษร');btn.disabled=false;return;}action='createUser';payload=Object.assign({id_card:idc,password:pw},data);}
+  callAPI(action,payload).then(function(res){btn.disabled=false;if(res&&res.success){closeModal('userModal');loadUsers();}else{userAlert((res&&res.error)||'บันทึกไม่สำเร็จ');}}).catch(function(){btn.disabled=false;userAlert('เกิดข้อผิดพลาด');});
+}
+function toggleUser(id,active){showConfirm(active?'เปิดการใช้งานบัญชีนี้?':'ระงับการใช้งานบัญชีนี้?',{title:'เปลี่ยนสถานะบัญชี',danger:!active,yesText:active?'เปิดใช้งาน':'ระงับ'}).then(function(ok){if(!ok)return;callAPI('toggleUserActive',{user_id:id,is_active:active}).then(function(res){if(res&&res.success){showToast(res.message||'ดำเนินการเรียบร้อย','success');loadUsers();}else{showToast((res&&res.error)||'ไม่สำเร็จ','error');}}).catch(function(){showToast('เกิดข้อผิดพลาด','error');});});}
+
+// ════════ CSV IMPORT ════════
+function csvAlert(m){var el=document.getElementById('csvAlert');if(m){el.className='alert error';document.getElementById('csvAlertTxt').textContent=m;}else{el.className='alert';}}
+function openCsvModal(){csvRows=[];document.getElementById('csvFile').value='';document.getElementById('csvPreview').style.display='none';document.getElementById('csvResult').style.display='none';document.getElementById('csvImportBtn').disabled=true;csvAlert('');document.getElementById('csvModal').classList.add('show');}
+function parseCsvLine(line){var out=[],cur='',q=false;for(var i=0;i<line.length;i++){var c=line[i];if(q){if(c==='"'&&line[i+1]==='"'){cur+='"';i++;}else if(c==='"'){q=false;}else cur+=c;}else{if(c==='"')q=true;else if(c===','){out.push(cur);cur='';}else cur+=c;}}out.push(cur);return out.map(function(s){return s.trim();});}
+function handleCsvFile(ev){
+  var file=ev.target.files[0];if(!file)return;var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var text=e.target.result.replace(/^﻿/,'');var lines=text.split(/\r?\n/).filter(function(l){return l.trim()!=='';});
+      if(lines.length<2){csvAlert('ไฟล์ต้องมีหัวตาราง + ข้อมูลอย่างน้อย 1 แถว');return;}
+      var headers=parseCsvLine(lines[0]).map(function(h){return h.toLowerCase().replace(/\s/g,'');});
+      var idx={};['id_card','title','first_name','last_name','role','department','email','phone','password'].forEach(function(k){idx[k]=headers.indexOf(k);});
+      if(idx.id_card<0||idx.first_name<0||idx.last_name<0||idx.role<0||idx.email<0){csvAlert('หัวตารางไม่ครบ ต้องมี: id_card, first_name, last_name, role, email');return;}
+      csvRows=[];for(var r=1;r<lines.length;r++){var c=parseCsvLine(lines[r]);csvRows.push({id_card:c[idx.id_card]||'',title:idx.title>=0?(c[idx.title]||''):'',first_name:c[idx.first_name]||'',last_name:c[idx.last_name]||'',role:(c[idx.role]||'').toUpperCase(),department:idx.department>=0?(c[idx.department]||''):'',email:c[idx.email]||'',phone:idx.phone>=0?(c[idx.phone]||''):'',password:idx.password>=0?(c[idx.password]||''):''});}
+      csvAlert('');renderCsvPreview();
+    }catch(err){csvAlert('อ่านไฟล์ไม่สำเร็จ: '+err.message);}
+  };reader.readAsText(file,'UTF-8');
+}
+function renderCsvPreview(){
+  document.getElementById('csvCount').textContent=csvRows.length;
+  document.getElementById('csvPreviewBody').innerHTML=csvRows.slice(0,50).map(function(u,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(u.id_card)+'</td><td>'+esc(u.title+u.first_name+' '+u.last_name)+'</td><td>'+esc(u.role)+'</td><td>'+esc(u.email)+'</td></tr>';}).join('');
+  document.getElementById('csvPreview').style.display='block';document.getElementById('csvImportBtn').disabled=csvRows.length===0;
+}
+function doImportCsv(){
+  if(!csvRows.length){csvAlert('ยังไม่มีข้อมูล');return;}
+  var btn=document.getElementById('csvImportBtn');btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner spin"></i> กำลังนำเข้า...';
+  callAPI('bulkImportUsers',{users:csvRows,default_password:document.getElementById('csvDefaultPw').value||'Kcw@2568'}).then(function(res){
+    btn.innerHTML='<i class="fas fa-upload"></i> นำเข้า';btn.disabled=false;var box=document.getElementById('csvResult');box.style.display='block';
+    if(res&&res.success){var d=res.data;var html='<div class="alert success" style="display:flex"><i class="fas fa-check-circle"></i> นำเข้าสำเร็จ '+d.created+' รายการ'+(d.failed?(' / ไม่สำเร็จ '+d.failed+' รายการ'):'')+'</div>';
+      if(d.errors&&d.errors.length){html+='<div style="max-height:160px;overflow:auto;border:1px solid #eee;border-radius:8px;margin-top:8px"><table class="data-table" style="font-size:12px"><thead><tr><th>แถว</th><th>เลขบัตร</th><th>สาเหตุ</th></tr></thead><tbody>'+d.errors.map(function(e){return '<tr><td>'+e.row+'</td><td>'+esc(e.id_card)+'</td><td style="color:var(--rejected)">'+esc(e.reason)+'</td></tr>';}).join('')+'</tbody></table></div>';}
+      box.innerHTML=html;loadUsers();
+    }else{box.innerHTML='<div class="alert error" style="display:flex"><i class="fas fa-times-circle"></i> '+esc((res&&res.error)||'นำเข้าไม่สำเร็จ')+'</div>';}
+  }).catch(function(){btn.innerHTML='<i class="fas fa-upload"></i> นำเข้า';btn.disabled=false;csvAlert('เกิดข้อผิดพลาดในการเชื่อมต่อ');});
+}
+function downloadCsvTemplate(){
+  var csv='id_card,title,first_name,last_name,role,department,email,phone,password\n1234567890123,นาย,สมชาย,ใจดี,TEACHER,คณิตศาสตร์,somchai@kcw.ac.th,0812345678,\n1234567890124,นางสาว,สมหญิง,รักเรียน,HEAD,วิทยาศาสตร์และเทคโนโลยี,somying@kcw.ac.th,0823456789,';
+  var blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='kims_users_template.csv';a.click();
+}
+
+// ════════ REPORTS ════════
+function loadReports(){
+  var year=document.getElementById('reportYear').value;
+  callAPI('getYearlyReport',{academic_year:year}).then(function(res){
+    if(!res||!res.success)return;var d=res.data;
+    document.getElementById('rpTotal').textContent=(d.total||0).toLocaleString();
+    renderChart('rpType','doughnut',d.byType.map(function(t){return t.name;}),d.byType.map(function(t){return t.count;}),{cutout:'60%',plugins:{legend:{position:'bottom',labels:{font:chartFont,padding:8,boxWidth:12}}}},typeColors,'rpTypeChart');
+    renderChart('rpDept','bar',d.byDept.map(function(x){return x.dept;}),d.byDept.map(function(x){return x.count;}),{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0}}}},'#148F77','rpDeptChart');
+  });
+  callAPI('getTeacherReport',{}).then(function(res){
+    var tb=document.querySelector('#rpTeacherTable tbody');
+    if(!res||!res.success){tb.innerHTML='<tr><td colspan="5" class="empty">โหลดไม่สำเร็จ</td></tr>';return;}
+    document.getElementById('rpTeachers').textContent=(res.data.total_teachers||0).toLocaleString();
+    var list=(res.data.teachers||[]).filter(function(t){return t.total>0;});
+    state.reportTeachers=list;
+    if(!list.length){tb.innerHTML='<tr><td colspan="5" class="empty">ยังไม่มีข้อมูล</td></tr>';return;}
+    tb.innerHTML=list.map(function(t,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(t.full_name)+'</td><td>'+esc(t.department||'-')+'</td><td>'+t.total+'</td><td>'+(t.total_views||0)+'</td></tr>';}).join('');
+  });
+  callAPI('getApprovalReport',{}).then(function(res){
+    if(!res||!res.success)return;var d=res.data;
+    document.getElementById('apApproved').textContent=(d.totalApproved||0).toLocaleString();
+    document.getElementById('apRejected').textContent=(d.totalRejected||0).toLocaleString();
+    document.getElementById('apPending').textContent=(d.pending||0).toLocaleString();
+    document.getElementById('apAvg').textContent=d.avgDays||0;
+    var ctx=document.getElementById('apChart');if(charts.ap)charts.ap.destroy();
+    charts.ap=new Chart(ctx,{type:'bar',data:{labels:d.monthly.map(function(m){return m.label;}),datasets:[{label:'อนุมัติ',data:d.monthly.map(function(m){return m.approved;}),backgroundColor:'#27AE60',borderRadius:5},{label:'ปฏิเสธ',data:d.monthly.map(function(m){return m.rejected;}),backgroundColor:'#E74C3C',borderRadius:5}]},options:Object.assign({},chartDefaults,{scales:{y:{beginAtZero:true,ticks:{precision:0}}}})});
+  });
+}
+// Export รายงานรายครูเป็น CSV (เปิดใน Excel ได้) — สำหรับ สพฐ.
+function exportReportExcel(){
+  var list=state.reportTeachers||[];
+  if(!list.length){showToast('ไม่มีข้อมูลให้ส่งออก','error');return;}
+  var year=document.getElementById('reportYear').value;
+  var header=['ลำดับ','ชื่อครู','กลุ่มสาระ','จำนวนผลงาน','ยอดเข้าชม'];
+  var rows=list.map(function(t,i){return [i+1,t.full_name,t.department||'',t.total,t.total_views||0];});
+  var csv=[header].concat(rows).map(function(r){return r.map(function(c){var s=String(c==null?'':c);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}).join(',');}).join('\n');
+  var blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='KIMS_รายงานรายครู_'+year+'.csv';a.click();
+  showToast('ส่งออกไฟล์ Excel เรียบร้อยแล้ว','success');
+}
+
+// ════════ AUDIT LOG ════════
+var AUDIT_LABELS={LOGIN:'เข้าสู่ระบบ',LOGOUT:'ออกจากระบบ',CREATE:'สร้าง',UPDATE:'แก้ไข',DELETE:'ลบ',APPROVE:'อนุมัติ',REJECT:'ปฏิเสธ',VIEW:'เข้าชม',CHANGE_PASSWORD:'เปลี่ยนรหัสผ่าน',UPDATE_CONFIG:'แก้ไขการตั้งค่า',BULK_IMPORT:'นำเข้าผู้ใช้',UPLOAD_FILE:'อัปโหลดไฟล์'};
+function loadAudit(){
+  var tb=document.querySelector('#auditTable tbody');tb.innerHTML='<tr><td colspan="5" class="loading"><i class="fas fa-spinner spin"></i> กำลังโหลด...</td></tr>';
+  callAPI('getAuditLog',{limit:100}).then(function(res){
+    if(!res||!res.success){tb.innerHTML='<tr><td colspan="5" class="empty">'+((res&&res.error)||'โหลดไม่สำเร็จ')+'</td></tr>';return;}
+    var logs=(res.data&&res.data.logs)||[];
+    if(!logs.length){tb.innerHTML='<tr><td colspan="5" class="empty">ยังไม่มีบันทึก</td></tr>';return;}
+    tb.innerHTML=logs.map(function(l){
+      var detail='';try{var o=JSON.parse(l.detail);detail=Object.keys(o).map(function(k){return o[k];}).join(' ');}catch(e){detail=l.detail||'';}
+      return '<tr><td style="white-space:nowrap;font-size:13px">'+esc(l.timestamp)+'</td><td style="font-size:13px">'+esc(l.user_id)+'</td><td><span class="badge DRAFT">'+esc(AUDIT_LABELS[l.action]||l.action)+'</span></td><td style="font-size:13px">'+esc(l.target_type||'-')+'</td><td style="font-size:12px;color:var(--dark-gray)">'+esc(detail)+'</td></tr>';
+    }).join('');
+  }).catch(function(){tb.innerHTML='<tr><td colspan="5" class="empty">เกิดข้อผิดพลาด</td></tr>';});
+}
+
+// ════════ CONFIG ════════
+function configAlert(t,m){var el=document.getElementById('configAlert');if(m){el.className='alert '+t;document.getElementById('configAlertTxt').textContent=m;}else{el.className='alert';}}
+function loadConfig(){
+  var box=document.getElementById('configForm');box.innerHTML='<div class="loading"><i class="fas fa-spinner spin"></i> กำลังโหลด...</div>';
+  callAPI('getConfig').then(function(res){
+    if(!res||!res.success){box.innerHTML='<div class="empty">'+((res&&res.error)||'โหลดไม่สำเร็จ')+'</div>';return;}
+    var c=res.data;
+    var fields=[
+      {k:'school_name',l:'ชื่อโรงเรียน',t:'text'},
+      {k:'school_logo_url',l:'โลโก้โรงเรียน',d:'อัปโหลดรูปโลโก้ (แสดงบนหัวเว็บ)',t:'image'},
+      {k:'admin_email',l:'อีเมลผู้ดูแลระบบ',t:'email'},
+      {k:'max_file_size_mb',l:'ขนาดไฟล์สูงสุด',d:'หน่วยเป็น MB',t:'number'},
+      {k:'primary_color',l:'สีหลักของระบบ',t:'color'},
+      {k:'secondary_color',l:'สีรองของระบบ',t:'color'},
+      {k:'maintenance_mode',l:'โหมดปิดปรับปรุง',d:'ปิดระบบชั่วคราวสำหรับผู้ใช้ทั่วไป',t:'toggle'},
+      {k:'footer_line1',l:'ข้อความท้ายเว็บ/เอกสาร บรรทัด 1',d:'แสดงท้ายเว็บและหน้าพิมพ์',t:'text'},
+      {k:'footer_line2',l:'ข้อความท้ายเว็บ/เอกสาร บรรทัด 2',t:'text'},
+      {k:'footer_line3',l:'ข้อความท้ายเว็บ/เอกสาร บรรทัด 3',t:'text'},
+      {k:'footer_color',l:'สีข้อความท้ายเว็บ',d:'สีตัวอักษรส่วน footer',t:'color'}
+    ];
+    box.innerHTML=fields.map(function(f){
+      var ctrl;
+      if(f.t==='toggle'){var on=String(c[f.k]).toUpperCase()==='TRUE';ctrl='<label class="switch"><input type="checkbox" data-key="'+f.k+'" data-type="toggle"'+(on?' checked':'')+'><span class="slider"></span></label>';}
+      else if(f.t==='color'){var v=c[f.k]||'#1A5276';ctrl='<div class="color-wrap"><input type="color" data-key="'+f.k+'" value="'+esc(v)+'" oninput="this.nextElementSibling.textContent=this.value"><span class="hex">'+esc(v)+'</span></div>';}
+      else if(f.t==='image'){var iv=c[f.k]||'';ctrl='<div style="display:flex;align-items:center;gap:10px"><div id="cfgLogoPrev" style="width:48px;height:48px;border-radius:8px;background:var(--gray-bg);display:flex;align-items:center;justify-content:center;overflow:hidden">'+(iv?'<img src="'+esc(iv)+'" style="width:100%;height:100%;object-fit:contain" referrerpolicy="no-referrer">':'<i class="fas fa-image" style="color:#bbb"></i>')+'</div><input type="hidden" data-key="'+f.k+'" id="cfg_'+f.k+'" value="'+esc(iv)+'"><input type="file" accept="image/*" onchange="handleLogoUpload(event)" style="font-size:13px"></div>';}
+      else{ctrl='<input type="'+f.t+'" data-key="'+f.k+'" value="'+esc(c[f.k]||'')+'">';}
+      return '<div class="cfg-item"><div class="cfg-label">'+esc(f.l)+(f.d?'<small>'+esc(f.d)+'</small>':'')+'</div><div class="cfg-control">'+ctrl+'</div></div>';
+    }).join('')+'<div style="margin-top:20px"><button class="btn btn-primary" onclick="saveConfig()"><i class="fas fa-save"></i> บันทึกการตั้งค่า</button></div>';
+  }).catch(function(){box.innerHTML='<div class="empty">เกิดข้อผิดพลาด</div>';});
+}
+function handleLogoUpload(ev){
+  var file=ev.target.files[0];if(!file)return;
+  if(file.size>5*1024*1024){showToast('โลโก้ต้องไม่เกิน 5MB','error');return;}
+  var prev=document.getElementById('cfgLogoPrev');prev.innerHTML='<i class="fas fa-spinner spin" style="color:#bbb"></i>';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var base64=e.target.result.split(',')[1];
+    callAPI('uploadFile',{base64Data:base64,fileName:'logo_'+Date.now()+'_'+file.name,mimeType:file.type||'image/png',academicYear:'_SYSTEM'}).then(function(res){
+      if(res&&res.success){document.getElementById('cfg_school_logo_url').value=res.data.imageUrl;prev.innerHTML='<img src="'+esc(res.data.imageUrl)+'" style="width:100%;height:100%;object-fit:contain" referrerpolicy="no-referrer">';showToast('อัปโหลดโลโก้แล้ว กดบันทึกเพื่อยืนยัน','success');}
+      else{prev.innerHTML='<i class="fas fa-image" style="color:#bbb"></i>';showToast((res&&res.error)||'อัปโหลดไม่สำเร็จ','error');}
+    }).catch(function(){prev.innerHTML='<i class="fas fa-image" style="color:#bbb"></i>';showToast('เกิดข้อผิดพลาด','error');});
+  };reader.readAsDataURL(file);
+}
+function saveConfig(){
+  var payload={};
+  document.querySelectorAll('#configForm [data-key]').forEach(function(inp){
+    if(inp.getAttribute('data-type')==='toggle')payload[inp.getAttribute('data-key')]=inp.checked?'TRUE':'FALSE';
+    else payload[inp.getAttribute('data-key')]=inp.value;
+  });
+  callAPI('updateConfig',payload).then(function(res){if(res&&res.success){showToast('บันทึกการตั้งค่าเรียบร้อยแล้ว','success');Object.assign(state.publicConfig||(state.publicConfig={}),payload);applyBranding();renderFooter();}else{showToast((res&&res.error)||'บันทึกไม่สำเร็จ','error');}}).catch(function(){showToast('เกิดข้อผิดพลาด','error');});
+}
+function applyBranding(){
+  var c=state.publicConfig||{};var logo=c.school_logo_url||'';
+  // โลโก้บนแถบสาธารณะ
+  var pbLogo=document.querySelector('#publicBar .public-brand .logo');
+  if(pbLogo)pbLogo.innerHTML=logo?'<img src="'+esc(logo)+'" style="width:100%;height:100%;object-fit:contain" referrerpolicy="no-referrer">':'<i class="fas fa-lightbulb"></i>';
+  // โลโก้บน sidebar
+  var sbLogo=document.querySelector('.sidebar-logo .icon');
+  if(sbLogo)sbLogo.innerHTML=logo?'<img src="'+esc(logo)+'" style="width:100%;height:100%;object-fit:contain" referrerpolicy="no-referrer">':'<i class="fas fa-lightbulb"></i>';
+}
+
+// ════════ MY INNOVATIONS ════════
+function loadMy(){
+  var box=document.getElementById('myList');box.innerHTML='<div class="loading"><i class="fas fa-spinner spin"></i> กำลังโหลด...</div>';
+  callAPI('getMyInnovations').then(function(res){
+    if(!res||!res.success){box.innerHTML='<div class="empty">'+((res&&res.error)||'โหลดไม่สำเร็จ')+'</div>';return;}
+    var list=res.data.innovations||[];
+    if(!list.length){box.innerHTML='<div class="empty"><i class="fas fa-folder-open" style="font-size:32px;color:var(--draft)"></i><br><br>ยังไม่มีนวัตกรรม<br><br><button class="btn btn-accent" onclick="showView(\'upload\')"><i class="fas fa-plus"></i> เพิ่มนวัตกรรมแรก</button></div>';return;}
+    box.innerHTML='<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>ชื่อ</th><th>ประเภท</th><th>ปี</th><th>สถานะ</th><th></th></tr></thead><tbody>'+
+      list.map(function(r){
+        var canEdit=(r.status==='DRAFT'||r.status==='REJECTED');
+        var reject=r.status==='REJECTED'&&r.reject_reason?'<div style="font-size:12px;color:var(--rejected);margin-top:4px"><i class="fas fa-info-circle"></i> '+esc(r.reject_reason)+'</div>':'';
+        return '<tr><td>'+esc(r.title)+reject+'</td><td>'+esc(r.type_name)+'</td><td>'+esc(r.academic_year||'-')+'</td><td><span class="badge '+r.status+'">'+esc(r.status_label||r.status)+'</span></td>'+
+          '<td style="white-space:nowrap">'+(canEdit?'<button class="btn btn-ghost btn-sm" onclick="editInnovation(\''+r.innovation_id+'\')"><i class="fas fa-edit"></i></button> <button class="btn btn-ghost btn-sm" onclick="deleteInnovation(\''+r.innovation_id+'\')"><i class="fas fa-trash"></i></button>':'<span style="color:#aaa;font-size:12px">—</span>')+'</td></tr>';
+      }).join('')+'</tbody></table></div>';
+    state.myInnovations=list;
+  }).catch(function(){box.innerHTML='<div class="empty">เกิดข้อผิดพลาด</div>';});
+}
+function deleteInnovation(id){showConfirm('ยืนยันการลบนวัตกรรมนี้? การลบไม่สามารถย้อนกลับได้',{title:'ลบนวัตกรรม',danger:true,yesText:'ลบ'}).then(function(ok){if(!ok)return;callAPI('deleteInnovation',{innovation_id:id}).then(function(res){if(res&&res.success){showToast(res.message||'ลบเรียบร้อยแล้ว','success');refreshInnovationList();}else{showToast((res&&res.error)||'ลบไม่สำเร็จ','error');}}).catch(function(){showToast('เกิดข้อผิดพลาด','error');});});}
+function refreshInnovationList(){if(!document.getElementById('view-manage').classList.contains('hidden'))loadManage();else loadMy();}
+
+// ════════ UPLOAD / EDIT INNOVATION ════════
+function uploadAlert(t,m){var el=document.getElementById('uploadAlert');if(m){el.className='alert '+t;document.getElementById('uploadAlertTxt').textContent=m;}else{el.className='alert';}}
+function resetUpload(){
+  document.getElementById('up_id').value='';document.getElementById('uploadTitle').textContent='เพิ่มนวัตกรรมใหม่';
+  ['up_title','up_desc','up_tags','up_link'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('up_type').value='';document.getElementById('up_department').value='';
+  document.querySelectorAll('#up_grades input').forEach(function(c){c.checked=false;});
+  uploadedFiles=[];renderUploadFiles();uploadAlert('');clearCover();document.getElementById('up_saveBtn').innerHTML='<i class="fas fa-paper-plane"></i> ส่งนวัตกรรม';
+}
+function editInnovation(id,fromView){
+  state.uploadReturn=fromView||'my';
+  var r=null;var all=(state.myInnovations||[]).concat(state.manageList||[]);
+  all.forEach(function(x){if(x.innovation_id===id)r=x;});
+  if(!r){showToast('ไม่พบข้อมูล','error');return;}
+  showView('upload');
+  document.getElementById('up_id').value=r.innovation_id;document.getElementById('uploadTitle').textContent='แก้ไขนวัตกรรม';
+  document.getElementById('up_title').value=r.title||'';document.getElementById('up_type').value=r.type_code||'';document.getElementById('up_department').value=r.department||'';
+  document.getElementById('up_year').value=r.academic_year||thaiYears()[0];document.getElementById('up_semester').value=r.semester||'1';
+  document.getElementById('up_desc').value=r.description||'';document.getElementById('up_tags').value=r.tags||'';document.getElementById('up_link').value=r.link_url||'';
+  var grades=r.grade_level||[];document.querySelectorAll('#up_grades input').forEach(function(c){c.checked=grades.indexOf(c.value)>=0;});
+  uploadedFiles=(r.file_urls||[]).map(function(u,i){return {fileUrl:u,fileName:(r.file_names&&r.file_names[i])||('ไฟล์ '+(i+1)),existing:true};});
+  renderUploadFiles();uploadAlert('');
+  pendingCoverUrl=r.cover_url||'';
+  document.getElementById('up_coverPreview').innerHTML=pendingCoverUrl?'<img src="'+esc(pendingCoverUrl)+'" style="max-width:220px;border-radius:10px" referrerpolicy="no-referrer"> <button class="rm" onclick="clearCover()"><i class="fas fa-times"></i></button>':'';
+  document.getElementById('up_saveBtn').innerHTML='<i class="fas fa-paper-plane"></i> บันทึกการแก้ไข';
+}
+function renderUploadFiles(){
+  var box=document.getElementById('up_fileList');
+  box.innerHTML=uploadedFiles.map(function(f,i){return '<div class="file-item"><span><i class="fas fa-file"></i> '+esc(f.fileName)+(f.uploading?' <i class="fas fa-spinner spin"></i>':'')+'</span><button class="rm" onclick="removeUploadFile('+i+')"><i class="fas fa-times"></i></button></div>';}).join('');
+}
+function removeUploadFile(i){uploadedFiles.splice(i,1);renderUploadFiles();}
+function handleUploadFiles(ev){
+  var files=ev.target.files;if(!files||!files.length)return;
+  for(var i=0;i<files.length;i++){(function(file){
+    if(file.size>100*1024*1024){uploadAlert('error','ไฟล์ '+file.name+' ใหญ่เกิน 100MB');return;}
+    var entry={fileName:file.name,uploading:true};uploadedFiles.push(entry);renderUploadFiles();
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var base64=e.target.result.split(',')[1];
+      callAPI('uploadFile',{base64Data:base64,fileName:file.name,mimeType:file.type||'application/octet-stream',academicYear:document.getElementById('up_year').value}).then(function(res){
+        entry.uploading=false;
+        if(res&&res.success){entry.fileUrl=res.data.fileUrl||res.data.viewUrl;entry.fileName=res.data.fileName||file.name;}
+        else{uploadAlert('error','อัปโหลด '+file.name+' ไม่สำเร็จ: '+((res&&res.error)||''));var idx=uploadedFiles.indexOf(entry);if(idx>=0)uploadedFiles.splice(idx,1);}
+        renderUploadFiles();
+      }).catch(function(){entry.uploading=false;uploadAlert('error','อัปโหลด '+file.name+' ผิดพลาด');var idx=uploadedFiles.indexOf(entry);if(idx>=0)uploadedFiles.splice(idx,1);renderUploadFiles();});
+    };
+    reader.readAsDataURL(file);
+  })(files[i]);}
+  ev.target.value='';
+}
+function submitInnovation(){
+  var grades=[];document.querySelectorAll('#up_grades input:checked').forEach(function(c){grades.push(c.value);});
+  var data={
+    title:document.getElementById('up_title').value.trim(),
+    type_code:document.getElementById('up_type').value,
+    department:document.getElementById('up_department').value,
+    grade_level:grades,
+    academic_year:document.getElementById('up_year').value,
+    semester:document.getElementById('up_semester').value,
+    description:document.getElementById('up_desc').value.trim(),
+    tags:document.getElementById('up_tags').value.trim(),
+    link_url:document.getElementById('up_link').value.trim()
+  };
+  if(!data.title){uploadAlert('error','กรุณากรอกชื่อนวัตกรรม');return;}
+  if(!data.type_code){uploadAlert('error','กรุณาเลือกประเภท');return;}
+  if(!data.department){uploadAlert('error','กรุณาเลือกกลุ่มสาระ');return;}
+  if(!grades.length){uploadAlert('error','กรุณาเลือกระดับชั้นอย่างน้อย 1 ระดับ');return;}
+  if(!data.description){uploadAlert('error','กรุณากรอกรายละเอียด');return;}
+  if(uploadedFiles.some(function(f){return f.uploading;})){uploadAlert('error','กรุณารอให้อัปโหลดไฟล์เสร็จก่อน');return;}
+  var urls=uploadedFiles.filter(function(f){return f.fileUrl;}).map(function(f){return f.fileUrl;});
+  var names=uploadedFiles.filter(function(f){return f.fileUrl;}).map(function(f){return f.fileName;});
+  if(!urls.length&&!data.link_url){uploadAlert('error','กรุณาแนบไฟล์หรือระบุลิงก์อย่างน้อย 1 รายการ');return;}
+  data.file_urls=JSON.stringify(urls);data.file_names=JSON.stringify(names);
+  data.cover_url=pendingCoverUrl||'';
+  var id=document.getElementById('up_id').value;var btn=document.getElementById('up_saveBtn');btn.disabled=true;
+  var action=id?'updateInnovation':'createInnovation';if(id)data.innovation_id=id;
+  callAPI(action,data).then(function(res){
+    btn.disabled=false;
+    if(res&&res.success){showToast(res.message||'บันทึกสำเร็จ','success');var ret=state.uploadReturn||'my';resetUpload();showView(ret);}
+    else{uploadAlert('error',(res&&res.error)||'บันทึกไม่สำเร็จ');}
+  }).catch(function(){btn.disabled=false;uploadAlert('error','เกิดข้อผิดพลาด');});
+}
+
+// ════════ TOAST / CONFIRM / PRINT ════════
+function showToast(msg,type){
+  type=type||'info';var icons={success:'fa-check-circle',error:'fa-times-circle',info:'fa-info-circle'};
+  var el=document.createElement('div');el.className='toast '+type;
+  el.innerHTML='<i class="fas '+(icons[type]||icons.info)+'"></i><span>'+esc(msg)+'</span>';
+  document.getElementById('toastBox').appendChild(el);
+  setTimeout(function(){el.style.transition='all .3s';el.style.opacity='0';el.style.transform='translateX(120%)';setTimeout(function(){el.remove();},300);},3400);
+}
+var _confirmResolve=null;
+function showConfirm(msg,opts){
+  opts=opts||{};
+  document.getElementById('confirmMsg').textContent=msg;
+  document.getElementById('confirmTitle').textContent=opts.title||'ยืนยันการทำรายการ';
+  var icon=document.getElementById('confirmIcon');var yes=document.getElementById('confirmYes');
+  if(opts.danger){icon.className='confirm-icon danger';icon.innerHTML='<i class="fas fa-exclamation-triangle"></i>';yes.className='btn btn-reject';}
+  else{icon.className='confirm-icon';icon.innerHTML='<i class="fas fa-question"></i>';yes.className='btn btn-primary';}
+  yes.textContent=opts.yesText||'ยืนยัน';
+  document.getElementById('confirmModal').classList.add('show');
+  return new Promise(function(resolve){_confirmResolve=resolve;});
+}
+function printView(menuName){
+  var c=state.publicConfig||{};
+  document.getElementById('printMenuName').textContent=menuName||'รายงาน';
+  document.getElementById('printMeta').textContent='พิมพ์เมื่อ '+new Date().toLocaleString('th-TH')+' โดย '+((state.user&&state.user.full_name)||'ผู้เยี่ยมชม');
+  var lines=[c.footer_line1,c.footer_line2,c.footer_line3].filter(function(x){return x;});
+  document.getElementById('globalPrintFooter').innerHTML=lines.map(function(l){return '<div>'+esc(l)+'</div>';}).join('');
+  setTimeout(function(){window.print();},150);
+}
+
+// ════════ BROWSE (ทุก user ดูได้) ════════
+function resetBrowseFilter(){['browseSearch','browseYear','browseType','browseDept','browseGrade'].forEach(function(id){document.getElementById(id).value='';});loadBrowse();}
+function loadBrowse(){
+  var box=document.getElementById('browseList');box.innerHTML='<div class="loading"><i class="fas fa-spinner spin"></i> กำลังโหลด...</div>';
+  callAPI('getInnovations',{
+    search:document.getElementById('browseSearch').value.trim(),
+    type_code:document.getElementById('browseType').value,
+    academic_year:document.getElementById('browseYear').value,
+    department:document.getElementById('browseDept').value,
+    grade_level:document.getElementById('browseGrade').value,
+    limit:120
+  }).then(function(res){
+    if(!res||!res.success){box.innerHTML='<div class="empty">'+((res&&res.error)||'โหลดไม่สำเร็จ')+'</div>';return;}
+    var list=(res.data&&res.data.innovations)||[];
+    var cnt=document.getElementById('browseCount');if(cnt)cnt.textContent=list.length+' รายการ';
+    if(!list.length){box.innerHTML='<div class="empty"><i class="fas fa-folder-open" style="font-size:32px"></i><br><br>ไม่พบนวัตกรรมตามเงื่อนไข</div>';return;}
+    var nowMs=Date.now();
+    box.innerHTML=list.map(function(r){
+      var isNew=r.created_at && (nowMs-new Date(r.created_at).getTime()) < 14*86400000;
+      var newBadge=isNew?'<span class="inv-new"><i class="fas fa-star"></i> ใหม่</span>':'';
+      var top=r.cover_url
+        ? '<div class="inv-top" style="background-image:url('+esc(r.cover_url)+')"><div class="ovl"></div>'+newBadge+'<span class="inv-type">'+esc(r.type_name)+'</span></div>'
+        : '<div class="inv-top">'+newBadge+'<i class="fas fa-lightbulb"></i><span class="inv-type">'+esc(r.type_name)+'</span></div>';
+      var tav=r.teacher_profile_url
+        ? '<span class="avatar-sm"><img src="'+esc(r.teacher_profile_url)+'" referrerpolicy="no-referrer"></span>'
+        : '<span class="avatar-sm rl-TEACHER"><i class="fas fa-user"></i></span>';
+      var tags=(r.tags||'').split(',').filter(function(t){return t.trim();}).slice(0,3).map(function(t){return '<span style="font-size:11px;color:var(--secondary)">#'+esc(t.trim())+'</span>';}).join(' ');
+      return '<div class="inv-card" onclick="openDetail(\''+r.innovation_id+'\')">'+top+
+        '<div class="inv-body">'+(r.department?'<span class="inv-dept"><i class="fas fa-book"></i> '+esc(r.department)+'</span>':'')+
+        '<div class="inv-title">'+esc(r.title)+'</div>'+
+        '<div class="inv-teacher">'+tav+' '+esc(r.teacher_name)+'</div>'+
+        (tags?'<div style="margin:2px 0 6px">'+tags+'</div>':'')+
+        '<div class="inv-meta"><span><i class="fas fa-eye"></i> '+(r.view_count||0)+' ครั้ง</span><span><i class="fas fa-calendar"></i> ปี '+esc(r.academic_year||'-')+'</span></div></div></div>';
+    }).join('');
+  }).catch(function(){box.innerHTML='<div class="empty">เกิดข้อผิดพลาด</div>';});
+}
+function openDetail(id){
+  var box=document.getElementById('detailBody');box.innerHTML='<div class="loading"><i class="fas fa-spinner spin"></i> กำลังโหลด...</div>';
+  document.getElementById('detailModal').classList.add('show');
+  callAPI('getInnovationById',{innovation_id:id}).then(function(res){
+    if(!res||!res.success){box.innerHTML='<div class="empty">'+((res&&res.error)||'ไม่พบข้อมูล')+'</div>';return;}
+    var r=res.data;
+    var files=(r.file_urls||[]).map(function(u,i){return '<a class="pc-file" href="'+esc(u)+'" target="_blank"><i class="fas fa-paperclip"></i> '+esc((r.file_names&&r.file_names[i])||('ไฟล์ '+(i+1)))+'</a>';}).join('');
+    var link=r.link_url?'<a class="pc-file" href="'+esc(r.link_url)+'" target="_blank"><i class="fas fa-link"></i> ลิงก์ภายนอก</a>':'';
+    var grades=(r.grade_level||[]).join(', ');
+    var cover=r.cover_url?'<div style="height:190px;border-radius:12px;background:url('+esc(r.cover_url)+') center/cover;margin-bottom:14px"></div>':'';
+    var tav=r.teacher_profile_url?'<span class="avatar-sm"><img src="'+esc(r.teacher_profile_url)+'" referrerpolicy="no-referrer"></span>':'<span class="avatar-sm rl-TEACHER"><i class="fas fa-user"></i></span>';
+    box.innerHTML=cover+'<div class="modal-title">'+esc(r.title)+'</div>'+
+      '<div class="inv-teacher" style="margin:0 0 12px">'+tav+' <strong>'+esc(r.teacher_name)+'</strong></div>'+
+      '<div class="pc-meta" style="margin-bottom:12px"><span><i class="fas fa-tag"></i> '+esc(r.type_name)+'</span><span><i class="fas fa-book"></i> '+esc(r.department||'-')+'</span><span><i class="fas fa-layer-group"></i> '+esc(grades||'-')+'</span><span><i class="fas fa-calendar"></i> ปี '+esc(r.academic_year||'-')+'</span><span><i class="fas fa-eye"></i> '+(r.view_count||0)+' ครั้ง</span></div>'+
+      '<p style="font-size:14px;line-height:1.7;color:#444;margin-bottom:14px;white-space:pre-wrap">'+esc(r.description||'')+'</p>'+
+      ((files||link)?'<div class="pc-files">'+files+link+'</div>':'');
+  }).catch(function(){box.innerHTML='<div class="empty">เกิดข้อผิดพลาด</div>';});
+}
+
+// ════════ PROFILE ════════
+function profileAlert(t,m){var el=document.getElementById('profileAlert');if(m){el.className='alert '+t;document.getElementById('profileAlertTxt').textContent=m;}else{el.className='alert';}}
+function renderProfilePic(url){document.getElementById('profilePic').innerHTML=url?'<img src="'+esc(url)+'" referrerpolicy="no-referrer">':'<i class="fas fa-user"></i>';}
+function refreshSidebarUser(){
+  var u=state.user;if(!u)return;var m=roleMeta(u.role);
+  document.getElementById('sidebarUser').innerHTML=avatarHtml(u.profile_url,u.role)+'<div class="info"><div class="nm">'+esc(u.full_name||'')+'</div><span class="role-chip rl-'+u.role+'"><i class="fas '+m.i+'"></i> '+esc(m.t)+'</span><div class="edit-hint"><i class="fas fa-pen"></i> แก้ไขโปรไฟล์</div></div>';
+}
+function fillProfile(u){
+  if(!u)return;
+  state.user=Object.assign({},state.user,u);
+  document.getElementById('pf_title').value=u.title||'นาย';
+  document.getElementById('pf_first_name').value=u.first_name||'';
+  document.getElementById('pf_last_name').value=u.last_name||'';
+  document.getElementById('pf_email').value=u.email||'';
+  document.getElementById('pf_phone').value=u.phone||'';
+  renderProfilePic(u.profile_url);
+}
+function openProfile(){
+  if(!state.user)return;
+  switchProfileTab('profile');profileAlert('');
+  document.getElementById('pw_old').value='';document.getElementById('pw_new').value='';document.getElementById('pw_confirm').value='';
+  document.getElementById('profileModal').classList.add('show');
+  fillProfile(state.user);                                  // แสดงทันทีจากข้อมูลที่มี
+  callAPI('getCurrentUser').then(function(res){ if(res&&res.success) fillProfile(res.data); }); // refresh ข้อมูลล่าสุด
+}
+function switchProfileTab(tab){
+  document.getElementById('tabProfile').classList.toggle('active',tab==='profile');
+  document.getElementById('tabPassword').classList.toggle('active',tab==='password');
+  document.getElementById('profileTabContent').style.display=tab==='profile'?'block':'none';
+  document.getElementById('passwordTabContent').style.display=tab==='password'?'block':'none';
+  profileAlert('');
+}
+function handleProfileImage(ev){
+  var file=ev.target.files[0];if(!file)return;
+  if(file.size>5*1024*1024){profileAlert('error','รูปต้องไม่เกิน 5MB');return;}
+  var btn=document.getElementById('profilePicBtn');btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner spin"></i> กำลังอัปโหลด...';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var base64=e.target.result.split(',')[1];
+    callAPI('uploadFile',{base64Data:base64,fileName:'profile_'+Date.now()+'_'+file.name,mimeType:file.type||'image/jpeg',academicYear:'_SYSTEM'}).then(function(res){
+      btn.disabled=false;btn.innerHTML='<i class="fas fa-camera"></i> เปลี่ยนรูปโปรไฟล์';
+      if(res&&res.success){state.user.profile_url=res.data.imageUrl;renderProfilePic(res.data.imageUrl);profileAlert('success','อัปโหลดรูปแล้ว กดบันทึกเพื่อยืนยัน');}
+      else profileAlert('error',(res&&res.error)||'อัปโหลดไม่สำเร็จ');
+    }).catch(function(){btn.disabled=false;btn.innerHTML='<i class="fas fa-camera"></i> เปลี่ยนรูปโปรไฟล์';profileAlert('error','เกิดข้อผิดพลาด');});
+  };reader.readAsDataURL(file);
+}
+function saveProfile(){
+  var data={title:document.getElementById('pf_title').value,first_name:document.getElementById('pf_first_name').value.trim(),last_name:document.getElementById('pf_last_name').value.trim(),email:document.getElementById('pf_email').value.trim(),phone:document.getElementById('pf_phone').value.trim(),profile_url:(state.user&&state.user.profile_url)||''};
+  if(!data.first_name||!data.last_name){profileAlert('error','กรุณากรอกชื่อ-นามสกุล');return;}
+  if(!data.email){profileAlert('error','กรุณากรอกอีเมล');return;}
+  var btn=document.getElementById('pf_saveBtn');btn.disabled=true;
+  callAPI('updateProfile',data).then(function(res){
+    btn.disabled=false;
+    if(res&&res.success){state.user=res.data;refreshSidebarUser();closeModal('profileModal');showToast('บันทึกโปรไฟล์เรียบร้อยแล้ว','success');}
+    else profileAlert('error',(res&&res.error)||'บันทึกไม่สำเร็จ');
+  }).catch(function(){btn.disabled=false;profileAlert('error','เกิดข้อผิดพลาด');});
+}
+function savePassword(){
+  var oldP=document.getElementById('pw_old').value,newP=document.getElementById('pw_new').value,conf=document.getElementById('pw_confirm').value;
+  if(!oldP||!newP){profileAlert('error','กรุณากรอกรหัสผ่าน');return;}
+  if(newP.length<6){profileAlert('error','รหัสผ่านใหม่อย่างน้อย 6 ตัวอักษร');return;}
+  if(newP!==conf){profileAlert('error','รหัสผ่านใหม่ไม่ตรงกัน');return;}
+  var btn=document.getElementById('pw_saveBtn');btn.disabled=true;
+  callAPI('changePassword',{old_password:oldP,new_password:newP}).then(function(res){
+    btn.disabled=false;
+    if(res&&res.success){closeModal('profileModal');showToast('เปลี่ยนรหัสผ่านเรียบร้อยแล้ว','success');}
+    else profileAlert('error',(res&&res.error)||'เปลี่ยนรหัสผ่านไม่สำเร็จ');
+  }).catch(function(){btn.disabled=false;profileAlert('error','เกิดข้อผิดพลาด');});
+}
+
+// ════════ COVER IMAGE ════════
+function handleCoverImage(ev){
+  var file=ev.target.files[0];if(!file)return;
+  if(file.size>10*1024*1024){uploadAlert('error','ภาพหน้าปกต้องไม่เกิน 10MB');return;}
+  var box=document.getElementById('up_coverPreview');box.innerHTML='<i class="fas fa-spinner spin"></i> กำลังอัปโหลดหน้าปก...';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var base64=e.target.result.split(',')[1];
+    callAPI('uploadFile',{base64Data:base64,fileName:'cover_'+Date.now()+'_'+file.name,mimeType:file.type||'image/jpeg',academicYear:document.getElementById('up_year').value}).then(function(res){
+      if(res&&res.success){pendingCoverUrl=res.data.imageUrl;box.innerHTML='<img src="'+esc(res.data.imageUrl)+'" style="max-width:220px;border-radius:10px" referrerpolicy="no-referrer"> <button class="rm" onclick="clearCover()"><i class="fas fa-times"></i></button>';}
+      else{box.innerHTML='';uploadAlert('error',(res&&res.error)||'อัปโหลดหน้าปกไม่สำเร็จ');}
+    }).catch(function(){box.innerHTML='';uploadAlert('error','เกิดข้อผิดพลาด');});
+  };reader.readAsDataURL(file);
+}
+function clearCover(){pendingCoverUrl='';document.getElementById('up_coverPreview').innerHTML='';document.getElementById('up_coverFile').value='';}
+
+// ════════ FOOTER ════════
+var APP_VERSION='1.2';
+function renderFooter(){
+  var c=state.publicConfig||{};
+  var lines=[c.footer_line1,c.footer_line2,c.footer_line3].filter(function(x){return x;});
+  var html=lines.map(function(l){return '<div>'+esc(l)+'</div>';}).join('');
+  html+='<div class="cr"><i class="far fa-copyright"></i> '+(new Date().getFullYear()+543)+' '+esc(c.school_name||'โรงเรียนกระแชงวิทยา')+' · ระบบบริหารจัดการนวัตกรรม (KIMS) · สงวนลิขสิทธิ์</div>';
+  html+='<div class="ver">KIMS เวอร์ชัน '+APP_VERSION+'</div>';
+  var el=document.getElementById('appFooter');if(el){el.innerHTML=html;el.style.color=c.footer_color||'';}
+}
+
+// ════════ MOBILE SIDEBAR ════════
+function toggleSidebar(){document.querySelector('.sidebar').classList.toggle('open');document.getElementById('sidebarBackdrop').classList.toggle('show');}
+function closeSidebar(){document.querySelector('.sidebar').classList.remove('open');document.getElementById('sidebarBackdrop').classList.remove('show');}
+
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+</script>
+</body>
+</html>

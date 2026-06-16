@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #1A5276; --secondary: #2E86C1; --accent: #148F77;
+      --light-blue: #D6EAF8; --gray-bg: #F2F3F4;
+      --font-main: 'Sarabun', sans-serif; --font-heading: 'Prompt', sans-serif;
+      --radius: 12px; --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-main); background: var(--gray-bg); color: #2C3E50; display: flex; }
+
+    /* SIDEBAR */
+    .sidebar { width: 240px; background: var(--primary); min-height: 100vh; flex-shrink: 0; position: fixed; top: 0; left: 0; z-index: 100; display: flex; flex-direction: column; }
+    .sb-logo { padding: 20px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sb-logo-text { font-family: var(--font-heading); color: #fff; font-size: 18px; font-weight: 700; }
+    .sb-logo-sub { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+    .sb-user { padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .sb-user-name { font-size: 13px; color: #fff; font-weight: 600; }
+    .sb-user-role { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+    .sb-nav { flex: 1; padding: 10px 0; }
+    .sb-nav a { display: flex; align-items: center; gap: 10px; padding: 11px 20px; color: rgba(255,255,255,0.75); text-decoration: none; font-size: 14px; transition: all .2s; }
+    .sb-nav a:hover, .sb-nav a.active { background: rgba(255,255,255,0.12); color: #fff; }
+    .sb-nav a.active { border-right: 3px solid #fff; }
+    .sb-nav .badge { background: #E74C3C; color: #fff; border-radius: 10px; padding: 2px 7px; font-size: 11px; font-weight: 700; margin-left: auto; }
+    .sb-footer { padding: 14px 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .sb-footer a { color: rgba(255,255,255,0.5); font-size: 13px; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .sb-footer a:hover { color: #fff; }
+
+    /* MAIN */
+    .main-wrapper { margin-left: 240px; flex: 1; min-height: 100vh; }
+    .topbar { background: #fff; padding: 0 28px; height: 60px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #E8ECF0; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+    .page-heading { font-family: var(--font-heading); font-size: 18px; font-weight: 700; color: var(--primary); }
+
+    .content { padding: 24px 28px; }
+
+    /* PAGE TOP */
+    .page-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
+    .btn-add { background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 11px 22px; font-family: var(--font-main); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background .2s; }
+    .btn-add:hover { background: #0e7360; }
+
+    /* FILTER */
+    .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .search-box { flex: 1; min-width: 200px; display: flex; align-items: center; background: #fff; border-radius: 10px; padding: 0 14px; border: 2px solid #E8ECF0; transition: border .2s; box-shadow: var(--shadow); }
+    .search-box:focus-within { border-color: var(--secondary); }
+    .search-box i { color: #95A5A6; margin-right: 8px; }
+    .search-box input { border: none; background: transparent; font-family: var(--font-main); font-size: 14px; padding: 10px 0; outline: none; width: 100%; }
+    .sel { border: 2px solid #E8ECF0; border-radius: 10px; padding: 9px 14px; font-family: var(--font-main); font-size: 14px; background: #fff; cursor: pointer; outline: none; box-shadow: var(--shadow); }
+    .sel:focus { border-color: var(--secondary); }
+
+    /* TABLE */
+    .table-card { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .table-head { padding: 16px 20px; border-bottom: 1px solid #F0F3F4; display: flex; justify-content: space-between; align-items: center; }
+    .table-count { font-size: 13px; color: #7F8C8D; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #F8FAFB; padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; color: #7F8C8D; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid #E8ECF0; white-space: nowrap; }
+    td { padding: 13px 16px; font-size: 14px; border-bottom: 1px solid #F5F7F8; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #FAFBFC; }
+
+    .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--light-blue); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; flex-shrink: 0; }
+    .user-name { font-weight: 600; color: #1A252F; }
+    .user-id { font-size: 12px; color: #95A5A6; margin-top: 2px; font-family: monospace; }
+    .role-badge { display: inline-flex; align-items: center; gap: 5px; border-radius: 20px; padding: 4px 10px; font-size: 12px; font-weight: 600; }
+    .role-SUPERADMIN { background: #EBF5FB; color: var(--primary); }
+    .role-ADMIN { background: #D6EAF8; color: #2E86C1; }
+    .role-HEAD { background: #E8F8F5; color: #148F77; }
+    .role-TEACHER { background: #F9F0FF; color: #8E44AD; }
+    .active-badge { display: inline-flex; align-items: center; gap: 5px; border-radius: 20px; padding: 4px 10px; font-size: 12px; font-weight: 600; }
+    .active-true { background: #E8F8F5; color: #148F77; }
+    .active-false { background: #FDEDEC; color: #E74C3C; }
+    .dept-text { font-size: 12px; color: #7F8C8D; }
+    .date-text { font-size: 12px; color: #7F8C8D; }
+
+    .action-btns { display: flex; gap: 6px; }
+    .btn-icon { width: 32px; height: 32px; border-radius: 8px; border: 1px solid #E0E0E0; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #7F8C8D; font-size: 13px; transition: all .2s; }
+    .btn-icon.edit:hover { background: var(--secondary); color: #fff; border-color: var(--secondary); }
+    .btn-icon.toggle:hover { background: #F39C12; color: #fff; border-color: #F39C12; }
+
+    /* MODAL FORM */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; align-items: flex-start; justify-content: center; padding: 30px 20px; overflow-y: auto; }
+    .modal-overlay.show { display: flex; }
+    .modal-box { background: #fff; border-radius: 16px; padding: 32px; max-width: 560px; width: 100%; margin: auto; }
+    .modal-title { font-family: var(--font-heading); font-size: 18px; font-weight: 700; color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1/-1; }
+    .form-label { font-size: 13px; font-weight: 600; color: #2C3E50; }
+    .form-label .req { color: #E74C3C; }
+    .form-input, .form-select {
+      border: 2px solid #E8ECF0; border-radius: 10px; padding: 10px 14px;
+      font-family: var(--font-main); font-size: 14px; outline: none; transition: border .2s;
+    }
+    .form-input:focus, .form-select:focus { border-color: var(--secondary); }
+    .form-input::placeholder { color: #BDC3C7; }
+    .form-hint { font-size: 12px; color: #95A5A6; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+    .btn-cancel { background: #fff; border: 2px solid #E0E0E0; color: #7F8C8D; border-radius: 10px; padding: 10px 20px; font-family: var(--font-main); font-size: 14px; cursor: pointer; }
+    .btn-save { background: var(--primary); color: #fff; border: none; border-radius: 10px; padding: 10px 24px; font-family: var(--font-main); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+    .btn-save:hover { background: var(--secondary); }
+
+    /* Empty */
+    .empty-state { text-align: center; padding: 60px; color: #95A5A6; }
+    .empty-state i { font-size: 48px; display: block; margin-bottom: 16px; }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #2C3E50; color: #fff; padding: 12px 24px; border-radius: 10px; font-size: 14px; z-index: 2000; display: none; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+    .toast.show { display: flex; }
+    .toast.success { background: var(--accent); }
+    .toast.error { background: #E74C3C; }
+
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .main-wrapper { margin-left: 0; }
+      .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-text"><i class="fas fa-lightbulb" style="margin-right:6px"></i>KIMS</div>
+    <div class="sb-logo-sub">โรงเรียนกระแชงวิทยา</div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-user-name" id="sbUserName">กำลังโหลด...</div>
+    <div class="sb-user-role" id="sbUserRole"></div>
+  </div>
+  <nav class="sb-nav">
+    <a href="?page=admin-dashboard"><i class="fas fa-chart-pie fa-fw"></i>แดชบอร์ด</a>
+    <a href="?page=admin-approve"><i class="fas fa-check-square fa-fw"></i>อนุมัตินวัตกรรม <span class="badge" id="sbBadge" style="display:none">0</span></a>
+    <a href="?page=innovations"><i class="fas fa-archive fa-fw"></i>คลังนวัตกรรม</a>
+    <a href="?page=admin-users" class="active"><i class="fas fa-users fa-fw"></i>จัดการผู้ใช้</a>
+    <a href="?page=admin-reports"><i class="fas fa-file-chart-bar fa-fw"></i>รายงาน</a>
+    <div id="superAdminNav" style="display:none">
+      <a href="?page=admin-config"><i class="fas fa-cog fa-fw"></i>ตั้งค่าระบบ</a>
+    </div>
+  </nav>
+  <div class="sb-footer">
+    <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i>ออกจากระบบ</a>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main-wrapper">
+  <div class="topbar">
+    <div class="page-heading"><i class="fas fa-users" style="margin-right:8px;color:var(--secondary)"></i>จัดการผู้ใช้งานระบบ</div>
+  </div>
+
+  <div class="content">
+    <div class="page-top">
+      <div style="font-size:14px;color:#7F8C8D" id="userTotal">กำลังโหลด...</div>
+      <button class="btn-add" onclick="openAddUser()"><i class="fas fa-plus"></i>เพิ่มผู้ใช้ใหม่</button>
+    </div>
+
+    <div class="filter-bar">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="ค้นหาชื่อ, เลขประจำตัวประชาชน..." oninput="renderTable()">
+      </div>
+      <select class="sel" id="filterRole" onchange="renderTable()">
+        <option value="">บทบาททั้งหมด</option>
+        <option value="SUPERADMIN">ผู้ดูแลสูงสุด</option>
+        <option value="ADMIN">ผู้ดูแลระบบ</option>
+        <option value="HEAD">หัวหน้ากลุ่มสาระ</option>
+        <option value="TEACHER">ครู</option>
+      </select>
+      <select class="sel" id="filterDept" onchange="renderTable()">
+        <option value="">กลุ่มสาระทั้งหมด</option>
+        <option>ภาษาไทย</option><option>คณิตศาสตร์</option>
+        <option>วิทยาศาสตร์และเทคโนโลยี</option>
+        <option>สังคมศึกษา ศาสนา และวัฒนธรรม</option>
+        <option>สุขศึกษาและพลศึกษา</option>
+        <option>ศิลปะ</option><option>การงานอาชีพ</option>
+        <option>ภาษาต่างประเทศ</option><option>กิจกรรมพัฒนาผู้เรียน</option>
+      </select>
+      <select class="sel" id="filterActive" onchange="renderTable()">
+        <option value="">สถานะทั้งหมด</option>
+        <option value="true">ใช้งาน</option>
+        <option value="false">ถูกระงับ</option>
+      </select>
+    </div>
+
+    <div class="table-card">
+      <div class="table-head">
+        <div class="table-count" id="tableCount">กำลังโหลด...</div>
+      </div>
+      <div id="tableWrapper">
+        <div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>กำลังโหลด...</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal-box">
+    <div class="modal-title">
+      <i class="fas fa-user-plus"></i>
+      <span id="modalTitle">เพิ่มผู้ใช้ใหม่</span>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">คำนำหน้า <span class="req">*</span></label>
+        <select class="form-select" id="fTitle">
+          <option>นาย</option><option>นาง</option><option>นางสาว</option><option>ว่าที่ร้อยตรี</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">เลขประจำตัวประชาชน <span class="req">*</span></label>
+        <input type="text" class="form-input" id="fIdCard" placeholder="1234567890123" maxlength="13">
+      </div>
+      <div class="form-group">
+        <label class="form-label">ชื่อ <span class="req">*</span></label>
+        <input type="text" class="form-input" id="fFirstName" placeholder="ชื่อ">
+      </div>
+      <div class="form-group">
+        <label class="form-label">นามสกุล <span class="req">*</span></label>
+        <input type="text" class="form-input" id="fLastName" placeholder="นามสกุล">
+      </div>
+      <div class="form-group">
+        <label class="form-label">บทบาท <span class="req">*</span></label>
+        <select class="form-select" id="fRole">
+          <option value="TEACHER">ครู</option>
+          <option value="HEAD">หัวหน้ากลุ่มสาระ</option>
+          <option value="ADMIN">ผู้ดูแลระบบ</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">กลุ่มสาระ</label>
+        <select class="form-select" id="fDept">
+          <option value="">-- ไม่ระบุ --</option>
+          <option>ภาษาไทย</option><option>คณิตศาสตร์</option>
+          <option>วิทยาศาสตร์และเทคโนโลยี</option>
+          <option>สังคมศึกษา ศาสนา และวัฒนธรรม</option>
+          <option>สุขศึกษาและพลศึกษา</option>
+          <option>ศิลปะ</option><option>การงานอาชีพ</option>
+          <option>ภาษาต่างประเทศ</option><option>กิจกรรมพัฒนาผู้เรียน</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">อีเมล</label>
+        <input type="email" class="form-input" id="fEmail" placeholder="email@school.ac.th">
+      </div>
+      <div class="form-group">
+        <label class="form-label">เบอร์โทร</label>
+        <input type="text" class="form-input" id="fPhone" placeholder="08x-xxx-xxxx">
+      </div>
+      <div class="form-group full" id="passwordGroup">
+        <label class="form-label">รหัสผ่านเริ่มต้น <span class="req">*</span></label>
+        <input type="text" class="form-input" id="fPassword" placeholder="รหัสผ่านอย่างน้อย 6 ตัวอักษร">
+        <span class="form-hint">ระบบจะส่งอีเมลแจ้งรหัสผ่านให้ผู้ใช้</span>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
+      <button class="btn-save" onclick="saveUser()"><i class="fas fa-save"></i><span id="saveBtnText">บันทึก</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── EXEC_URL ถูก inject โดย Code.gs ตอน serve ──────────
+  var EXEC_URL = "";  // placeholder — Code.gs จะแทนค่าจริง
+
+  function getExecUrl() { return EXEC_URL || window.location.href.split('?')[0]; }
+  function goTo(page) {
+    var token = sessionStorage.getItem('KIMS_TOKEN') || '';
+    var url = getExecUrl() + '?page=' + page;
+    if (token) url += '&_kt=' + encodeURIComponent(token);
+    window.open(url, '_top');
+  }
+  (function() {
+    try { var p = new URLSearchParams(window.location.search); var t = p.get('_kt'); if (t) { sessionStorage.setItem('KIMS_TOKEN', t); p.delete('_kt'); if (history.replaceState) history.replaceState(null, '', '?' + p.toString()); } } catch(e) {}
+    document.addEventListener('click', function(ev) {
+      var a = ev.target && ev.target.closest ? ev.target.closest('a[href*="?page="]') : null;
+      if (!a) return;
+      var href = a.getAttribute('href') || '';
+      var i = href.indexOf('?page='); if (i === -1) return;
+      ev.preventDefault();
+      var tok = sessionStorage.getItem('KIMS_TOKEN') || '';
+      var url = getExecUrl() + href.substring(i);
+      if (tok && url.indexOf('_kt=') === -1) url += '&_kt=' + encodeURIComponent(tok);
+      window.open(url, a.getAttribute('target') === '_blank' ? '_blank' : '_top');
+    });
+  })();
+  function getToken() { return sessionStorage.getItem('KIMS_TOKEN') || ''; }
+
+  function callAPI(action, params) {
+    var payload = Object.assign({ action: action, token: getToken() }, params || {});
+    return new Promise(function(resolve, reject) {
+      google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(reject)
+        .handleRequest(payload);
+    });
+  }
+
+const ROLE_LABELS = { SUPERADMIN:'ผู้ดูแลสูงสุด', ADMIN:'ผู้ดูแลระบบ', HEAD:'หัวหน้ากลุ่มสาระ', TEACHER:'ครู' };
+let allUsers = [];
+let editingUserId = '';
+let myRole = '';
+
+
+window.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const res = await callAPI('getCurrentUser', {});
+    if (!res.success) { sessionStorage.removeItem('KIMS_TOKEN'); sessionStorage.removeItem('KIMS_USER'); goTo('login'); return; }
+    const u = res.data;
+    if (!['SUPERADMIN','ADMIN'].includes(u.role)) { goTo('index'); return; }
+    myRole = u.role;
+    document.getElementById('sbUserName').textContent = u.full_name;
+    document.getElementById('sbUserRole').textContent = ROLE_LABELS[u.role] || u.role;
+    if (u.role === 'SUPERADMIN') {
+      document.getElementById('superAdminNav').style.display = 'block';
+      const opt = document.createElement('option');
+      opt.value = 'SUPERADMIN'; opt.textContent = 'ผู้ดูแลสูงสุด';
+      document.getElementById('fRole').insertBefore(opt, document.getElementById('fRole').firstChild);
+    }
+    await loadUsers();
+    loadPendingCount();
+  } catch(e) { sessionStorage.removeItem('KIMS_TOKEN'); sessionStorage.removeItem('KIMS_USER'); goTo('login'); }
+});
+
+async function loadPendingCount() {
+  try {
+    const res = await callAPI('getPendingList', {});
+    if (res.success && res.data && res.data.length > 0) {
+      const b = document.getElementById('sbBadge');
+      b.style.display = ''; b.textContent = res.data.length;
+    }
+  } catch(e) {}
+}
+
+async function loadUsers() {
+  try {
+    const res = await callAPI('getUsers', {});
+    if (!res.success) { showToast(res.error, 'error'); return; }
+    allUsers = res.data || [];
+    document.getElementById('userTotal').textContent = `ผู้ใช้ทั้งหมด ${allUsers.length} คน`;
+    renderTable();
+  } catch(e) { showToast('เกิดข้อผิดพลาด', 'error'); }
+}
+
+function renderTable() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const role = document.getElementById('filterRole').value;
+  const dept = document.getElementById('filterDept').value;
+  const active = document.getElementById('filterActive').value;
+
+  const filtered = allUsers.filter(u =>
+    (!search || `${u.first_name} ${u.last_name} ${u.id_card}`.toLowerCase().includes(search)) &&
+    (!role || u.role === role) &&
+    (!dept || u.department === dept) &&
+    (!active || String(u.is_active).toLowerCase() === active)
+  );
+
+  document.getElementById('tableCount').textContent = `แสดง ${filtered.length} รายการ`;
+
+  if (!filtered.length) {
+    document.getElementById('tableWrapper').innerHTML = `<div class="empty-state"><i class="fas fa-users-slash"></i><p>ไม่พบผู้ใช้งาน</p></div>`;
+    return;
+  }
+
+  const rows = filtered.map(u => {
+    const initials = (u.first_name||'?')[0].toUpperCase();
+    const active = String(u.is_active).toUpperCase() === 'TRUE';
+    const idMask = u.id_card ? `${u.id_card.slice(0,1)}-XXXX-XXXXX-${u.id_card.slice(10,12)}-${u.id_card.slice(12)}` : '-';
+    return `<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="user-avatar">${initials}</div>
+          <div>
+            <div class="user-name">${escHtml(u.title||'')}${escHtml(u.first_name||'')} ${escHtml(u.last_name||'')}</div>
+            <div class="user-id">${idMask}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="role-badge role-${u.role}">${ROLE_LABELS[u.role]||u.role}</span></td>
+      <td><span class="dept-text">${escHtml(u.department||'-')}</span></td>
+      <td>
+        <span class="active-badge active-${active}">${active ? '<i class="fas fa-circle" style="font-size:8px"></i> ใช้งาน' : '<i class="fas fa-circle" style="font-size:8px"></i> ระงับ'}</span>
+      </td>
+      <td><span class="date-text">${escHtml(u.last_login ? u.last_login.split(' ')[0] : 'ยังไม่เคย')}</span></td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-icon edit" onclick='editUser(${JSON.stringify(u)})' title="แก้ไข"><i class="fas fa-edit"></i></button>
+          <button class="btn-icon toggle" onclick="toggleActive('${escHtml(u.user_id)}','${escHtml(u.first_name)} ${escHtml(u.last_name)}',${active})" title="${active?'ระงับการใช้งาน':'เปิดใช้งาน'}">
+            <i class="fas fa-${active?'ban':'check-circle'}"></i>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('tableWrapper').innerHTML = `<div style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr><th>ผู้ใช้งาน</th><th>บทบาท</th><th>กลุ่มสาระ</th><th>สถานะ</th><th>เข้าระบบล่าสุด</th><th>จัดการ</th></tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+function openAddUser() {
+  editingUserId = '';
+  document.getElementById('modalTitle').textContent = 'เพิ่มผู้ใช้ใหม่';
+  document.getElementById('saveBtnText').textContent = 'เพิ่มผู้ใช้';
+  document.getElementById('passwordGroup').style.display = 'block';
+  document.getElementById('fIdCard').disabled = false;
+  ['fTitle','fFirstName','fLastName','fRole','fDept','fEmail','fPhone','fPassword','fIdCard'].forEach(id => {
+    document.getElementById(id).value = id === 'fTitle' ? 'นาย' : id === 'fRole' ? 'TEACHER' : '';
+  });
+  document.getElementById('userModal').classList.add('show');
+}
+
+function editUser(u) {
+  editingUserId = u.user_id;
+  document.getElementById('modalTitle').textContent = 'แก้ไขข้อมูลผู้ใช้';
+  document.getElementById('saveBtnText').textContent = 'บันทึกการแก้ไข';
+  document.getElementById('passwordGroup').style.display = 'none';
+  document.getElementById('fIdCard').disabled = true;
+  document.getElementById('fTitle').value = u.title || 'นาย';
+  document.getElementById('fIdCard').value = u.id_card || '';
+  document.getElementById('fFirstName').value = u.first_name || '';
+  document.getElementById('fLastName').value = u.last_name || '';
+  document.getElementById('fRole').value = u.role || 'TEACHER';
+  document.getElementById('fDept').value = u.department || '';
+  document.getElementById('fEmail').value = u.email || '';
+  document.getElementById('fPhone').value = u.phone || '';
+  document.getElementById('userModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('userModal').classList.remove('show');
+}
+
+async function saveUser() {
+  const payload = {
+    title: document.getElementById('fTitle').value,
+    id_card: document.getElementById('fIdCard').value.trim(),
+    first_name: document.getElementById('fFirstName').value.trim(),
+    last_name: document.getElementById('fLastName').value.trim(),
+    role: document.getElementById('fRole').value,
+    department: document.getElementById('fDept').value,
+    email: document.getElementById('fEmail').value.trim(),
+    phone: document.getElementById('fPhone').value.trim(),
+    password: document.getElementById('fPassword').value.trim(),
+  };
+
+  if (!payload.first_name || !payload.last_name || !payload.role) {
+    showToast('กรุณากรอกข้อมูลที่จำเป็นให้ครบ', 'error'); return;
+  }
+
+  if (!editingUserId) {
+    if (!payload.id_card || payload.id_card.length !== 13) {
+      showToast('กรุณากรอกเลขประจำตัวประชาชน 13 หลัก', 'error'); return;
+    }
+    if (!payload.password || payload.password.length < 6) {
+      showToast('กรุณาระบุรหัสผ่านอย่างน้อย 6 ตัวอักษร', 'error'); return;
+    }
+  }
+
+  closeModal();
+  showToast('กำลังบันทึกข้อมูล...', '');
+
+  try {
+    const action = editingUserId ? 'updateUser' : 'createUser';
+    const res = await callAPI(action, editingUserId ? { ...payload, user_id: editingUserId } : payload);
+    if (res.success) {
+      showToast(editingUserId ? 'แก้ไขข้อมูลสำเร็จ' : 'เพิ่มผู้ใช้สำเร็จ', 'success');
+      await loadUsers();
+    } else { showToast(res.error || 'ไม่สามารถบันทึกได้', 'error'); }
+  } catch(e) { showToast('เกิดข้อผิดพลาด', 'error'); }
+}
+
+async function toggleActive(userId, name, currentActive) {
+  const msg = currentActive ? `ระงับการใช้งานของ "${name}"?` : `เปิดใช้งาน "${name}" อีกครั้ง?`;
+  if (!confirm(msg)) return;
+  try {
+    const res = await callAPI('toggleUserActive', { user_id: userId });
+    if (res.success) {
+      showToast(currentActive ? 'ระงับการใช้งานแล้ว' : 'เปิดใช้งานแล้ว', 'success');
+      await loadUsers();
+    } else { showToast(res.error, 'error'); }
+  } catch(e) { showToast('เกิดข้อผิดพลาด', 'error'); }
+}
+
+async function logout() {
+  await callAPI('logout', {});
+  sessionStorage.removeItem('KIMS_TOKEN'); sessionStorage.removeItem('KIMS_USER'); goTo('login');
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type||''}`;
+  if (type !== 'loading') setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+document.getElementById('userModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('userModal')) closeModal();
+});
+</script>
+</body>
+</html>

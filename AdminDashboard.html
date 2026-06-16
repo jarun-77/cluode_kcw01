@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --primary: #1A5276; --secondary: #2E86C1; --accent: #148F77;
+      --light-blue: #D6EAF8; --light-teal: #D5F5E3;
+      --gray-bg: #F2F3F4; --dark-gray: #566573; --white: #FFFFFF;
+      --status-published: #27AE60; --status-pending: #F39C12; --status-draft: #85929E; --status-rejected: #E74C3C;
+      --font-main: 'Sarabun', sans-serif; --font-heading: 'Prompt', sans-serif;
+      --radius: 12px; --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-main); background: var(--gray-bg); color: #2c3e50; display: flex; min-height: 100vh; }
+
+    /* ── SIDEBAR ──────────────────────────────────────── */
+    .sidebar {
+      width: 240px;
+      background: var(--primary);
+      color: white;
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      display: flex;
+      flex-direction: column;
+      z-index: 200;
+      overflow-y: auto;
+    }
+    .sidebar-logo {
+      padding: 22px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sidebar-logo .icon { width: 36px; height: 36px; background: rgba(255,255,255,0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .sidebar-logo .name { font-family: var(--font-heading); font-size: 16px; font-weight: 700; }
+    .sidebar-logo .sub { font-size: 11px; opacity: 0.7; }
+
+    .sidebar-user {
+      padding: 16px 20px;
+      background: rgba(0,0,0,0.15);
+      font-size: 13px;
+    }
+    .sidebar-user .label { opacity: 0.7; font-size: 11px; margin-bottom: 2px; }
+    .sidebar-user .name { font-weight: 600; }
+    .sidebar-user .role { opacity: 0.8; font-size: 12px; }
+
+    .nav-section { padding: 12px 0; }
+    .nav-label { padding: 6px 20px; font-size: 11px; font-weight: 600; opacity: 0.5; text-transform: uppercase; letter-spacing: 0.5px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 20px;
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.12); color: white; }
+    .nav-item i { width: 18px; text-align: center; }
+    .nav-item .badge-nav { background: var(--status-pending); color: white; border-radius: 10px; padding: 1px 7px; font-size: 11px; margin-left: auto; }
+
+    .sidebar-bottom { margin-top: auto; padding: 16px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .btn-logout { width: 100%; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); border: none; border-radius: 8px; padding: 10px; font-family: var(--font-main); font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
+    .btn-logout:hover { background: rgba(255,255,255,0.2); color: white; }
+
+    /* ── MAIN ─────────────────────────────────────────── */
+    .main { margin-left: 240px; flex: 1; padding: 24px; }
+    .top-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .page-title { font-family: var(--font-heading); font-size: 1.4rem; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+    .top-bar-right { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--dark-gray); }
+
+    /* ── KPI CARDS ───────────────────────────────────── */
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .kpi-card {
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      border-left: 4px solid transparent;
+    }
+    .kpi-card.total { border-color: var(--primary); }
+    .kpi-card.published { border-color: var(--status-published); }
+    .kpi-card.pending { border-color: var(--status-pending); }
+    .kpi-card.teachers { border-color: var(--accent); }
+    .kpi-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+    .kpi-card.total .kpi-icon { background: #D6EAF8; color: var(--primary); }
+    .kpi-card.published .kpi-icon { background: var(--light-teal); color: var(--status-published); }
+    .kpi-card.pending .kpi-icon { background: #FDEBD0; color: var(--status-pending); }
+    .kpi-card.teachers .kpi-icon { background: #D5F5E3; color: var(--accent); }
+    .kpi-num { font-family: var(--font-heading); font-size: 2rem; font-weight: 700; line-height: 1; }
+    .kpi-label { font-size: 13px; color: var(--dark-gray); margin-top: 4px; }
+
+    /* ── CHARTS GRID ─────────────────────────────────── */
+    .charts-row { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; margin-bottom: 16px; }
+    .charts-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; }
+    .card-title { font-family: var(--font-heading); font-size: 15px; font-weight: 600; color: var(--primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .chart-wrap { position: relative; height: 200px; }
+    .chart-wrap.tall { height: 260px; }
+
+    /* ── TABLES ──────────────────────────────────────── */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .data-table th { background: var(--light-blue); color: var(--primary); padding: 10px 12px; text-align: left; font-weight: 600; }
+    .data-table td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; }
+    .data-table tr:hover td { background: #fafbfd; }
+    .data-table tr:last-child td { border-bottom: none; }
+
+    .status-badge { border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 600; }
+    .status-PUBLISHED { background: var(--light-teal); color: var(--status-published); }
+    .status-PENDING { background: #FDEBD0; color: var(--status-pending); }
+    .status-DRAFT { background: #F2F3F4; color: var(--status-draft); }
+    .status-REJECTED { background: #FADBD8; color: var(--status-rejected); }
+
+    .rank-num { width: 28px; height: 28px; border-radius: 50%; background: var(--light-blue); color: var(--primary); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
+    .rank-num.top-3 { background: var(--status-pending); color: white; }
+
+    .btn-approve { background: var(--status-published); color: white; border: none; border-radius: 6px; padding: 5px 12px; font-family: var(--font-main); font-size: 12px; cursor: pointer; margin-right: 4px; }
+    .btn-reject { background: var(--status-rejected); color: white; border: none; border-radius: 6px; padding: 5px 12px; font-family: var(--font-main); font-size: 12px; cursor: pointer; }
+
+    /* ── PENDING SECTION ─────────────────────────────── */
+    .pending-item { padding: 14px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; gap: 12px; }
+    .pending-item:last-child { border-bottom: none; }
+    .pending-icon { width: 40px; height: 40px; border-radius: 10px; background: #FDEBD0; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .pending-info { flex: 1; min-width: 0; }
+    .pending-title { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pending-meta { font-size: 12px; color: var(--dark-gray); margin-top: 2px; }
+    .pending-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+    /* ── LOADING ────────────────────────────────────── */
+    .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+    /* ── RESPONSIVE ─────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .kpi-grid { grid-template-columns: 1fr 1fr; }
+      .charts-row { grid-template-columns: 1fr; }
+      .charts-row-3 { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; padding: 16px; }
+      .kpi-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; align-items: center; justify-content: center; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: white; border-radius: var(--radius); padding: 28px; width: 90%; max-width: 480px; }
+    .modal-title { font-family: var(--font-heading); font-size: 1.1rem; margin-bottom: 16px; color: var(--primary); }
+    .modal-textarea { width: 100%; border: 2px solid #e0e0e0; border-radius: 8px; padding: 12px; font-family: var(--font-main); font-size: 14px; resize: vertical; min-height: 100px; outline: none; }
+    .modal-textarea:focus { border-color: var(--secondary); }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+    .btn-cancel { background: var(--gray-bg); border: none; border-radius: 8px; padding: 10px 20px; font-family: var(--font-main); cursor: pointer; }
+    .btn-confirm { background: var(--status-rejected); color: white; border: none; border-radius: 8px; padding: 10px 20px; font-family: var(--font-main); font-weight: 600; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<!-- ─── SIDEBAR ───────────────────────────────────────── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="icon"><i class="fas fa-lightbulb"></i></div>
+    <div>
+      <div class="name">KIMS</div>
+      <div class="sub">โรงเรียนกระแชงวิทยา</div>
+    </div>
+  </div>
+  <div class="sidebar-user" id="sidebarUser">
+    <div class="label">ผู้ใช้งาน</div>
+    <div class="name">กำลังโหลด...</div>
+    <div class="role"></div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">หลัก</div>
+    <a class="nav-item active" href="?page=admin-dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a>
+    <a class="nav-item" href="?page=admin-approve"><i class="fas fa-clock"></i> รออนุมัติ <span class="badge-nav" id="pendingBadge">0</span></a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">จัดการ</div>
+    <a class="nav-item" href="?page=admin-manage"><i class="fas fa-th-large"></i> นวัตกรรมทั้งหมด</a>
+    <a class="nav-item" href="?page=admin-users"><i class="fas fa-users"></i> จัดการผู้ใช้</a>
+    <a class="nav-item" href="?page=admin-reports"><i class="fas fa-file-chart-line"></i> รายงาน</a>
+  </div>
+
+  <div class="nav-section" id="superAdminNav" style="display:none;">
+    <div class="nav-label">Super Admin</div>
+    <a class="nav-item" href="?page=admin-config"><i class="fas fa-cog"></i> ตั้งค่าระบบ</a>
+    <a class="nav-item" href="?page=audit-log"><i class="fas fa-history"></i> Audit Log</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Public</div>
+    <a class="nav-item" href="?page=index" target="_blank"><i class="fas fa-globe"></i> หน้าเว็บหลัก</a>
+    <a class="nav-item" href="?page=upload"><i class="fas fa-cloud-upload-alt"></i> อัปโหลดนวัตกรรม</a>
+  </div>
+
+  <div class="sidebar-bottom">
+    <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> ออกจากระบบ</button>
+  </div>
+</aside>
+
+<!-- ─── MAIN ──────────────────────────────────────────── -->
+<main class="main">
+  <div class="top-bar">
+    <div class="page-title"><i class="fas fa-chart-pie"></i> Dashboard ภาพรวมนวัตกรรม</div>
+    <div class="top-bar-right">
+      <i class="fas fa-sync-alt" onclick="loadDashboard()" style="cursor:pointer;" title="รีเฟรช"></i>
+      <span id="lastUpdated">กำลังโหลด...</span>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card total">
+      <div class="kpi-icon"><i class="fas fa-layer-group"></i></div>
+      <div><div class="kpi-num" id="kpiTotal">—</div><div class="kpi-label">นวัตกรรมทั้งหมด</div></div>
+    </div>
+    <div class="kpi-card published">
+      <div class="kpi-icon"><i class="fas fa-check-circle"></i></div>
+      <div><div class="kpi-num" id="kpiPublished">—</div><div class="kpi-label">เผยแพร่แล้ว</div></div>
+    </div>
+    <div class="kpi-card pending">
+      <div class="kpi-icon"><i class="fas fa-hourglass-half"></i></div>
+      <div><div class="kpi-num" id="kpiPending">—</div><div class="kpi-label">รออนุมัติ</div></div>
+    </div>
+    <div class="kpi-card teachers">
+      <div class="kpi-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+      <div><div class="kpi-num" id="kpiTeachers">—</div><div class="kpi-label">ครูที่ส่งผลงาน</div></div>
+    </div>
+  </div>
+
+  <!-- Charts Row 1: Donut + Bar Year -->
+  <div class="charts-row">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-chart-pie"></i> สัดส่วนตามประเภท</div>
+      <div class="chart-wrap"><canvas id="typeChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-chart-bar"></i> จำนวนตามปีการศึกษา</div>
+      <div class="chart-wrap"><canvas id="yearChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Charts Row 2: Dept Bar + Line Trend -->
+  <div class="charts-row">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-chart-bar"></i> ตามกลุ่มสาระ</div>
+      <div class="chart-wrap tall"><canvas id="deptChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-chart-line"></i> แนวโน้มรายเดือน (12 เดือน)</div>
+      <div class="chart-wrap tall"><canvas id="trendChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Tables Row: Top Viewed + Top Teachers -->
+  <div class="charts-row">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-fire" style="color:#E74C3C;"></i> นวัตกรรมยอดนิยม (Top 10)</div>
+      <div style="overflow-x:auto;">
+        <table class="data-table" id="topViewedTable">
+          <thead><tr><th>#</th><th>ชื่อนวัตกรรม</th><th>ครู</th><th><i class="fas fa-eye"></i></th></tr></thead>
+          <tbody><tr><td colspan="4" style="text-align:center;color:#999;padding:20px;">กำลังโหลด...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-trophy" style="color:#F39C12;"></i> ครูที่ส่งผลงานมากที่สุด</div>
+      <div style="overflow-x:auto;">
+        <table class="data-table" id="topTeachersTable">
+          <thead><tr><th>#</th><th>ชื่อครู</th><th>กลุ่มสาระ</th><th>จำนวน</th></tr></thead>
+          <tbody><tr><td colspan="4" style="text-align:center;color:#999;padding:20px;">กำลังโหลด...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending List -->
+  <div class="card" id="pendingSection">
+    <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+      <span><i class="fas fa-clock" style="color:var(--status-pending);"></i> รออนุมัติล่าสุด</span>
+      <a href="?page=admin-approve" style="font-size:13px;color:var(--secondary);text-decoration:none;">ดูทั้งหมด →</a>
+    </div>
+    <div id="pendingList"><div style="text-align:center;color:#999;padding:20px;">กำลังโหลด...</div></div>
+  </div>
+</main>
+
+<!-- Reject Modal -->
+<div class="modal-overlay" id="rejectModal">
+  <div class="modal">
+    <div class="modal-title"><i class="fas fa-times-circle" style="color:var(--status-rejected);"></i> ปฏิเสธนวัตกรรม</div>
+    <p style="font-size:14px;color:var(--dark-gray);margin-bottom:12px;">กรุณาระบุเหตุผลเพื่อแจ้งให้ครูแก้ไข</p>
+    <textarea class="modal-textarea" id="rejectReason" placeholder="เช่น ไฟล์แนบไม่ครบ / เนื้อหาไม่ตรงประเภท / คำอธิบายไม่ชัดเจน..."></textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeRejectModal()">ยกเลิก</button>
+      <button class="btn-confirm" onclick="confirmReject()">ยืนยันปฏิเสธ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── EXEC_URL ถูก inject โดย Code.gs ตอน serve ──────────
+  var EXEC_URL = "";  // placeholder — Code.gs จะแทนค่าจริง
+
+  function getExecUrl() { return EXEC_URL || window.location.href.split('?')[0]; }
+  function goTo(page) {
+    var token = sessionStorage.getItem('KIMS_TOKEN') || '';
+    var url = getExecUrl() + '?page=' + page;
+    if (token) url += '&_kt=' + encodeURIComponent(token);
+    window.open(url, '_top');
+  }
+  function getToken() { return sessionStorage.getItem('KIMS_TOKEN') || ''; }
+  (function() {
+    try { var p = new URLSearchParams(window.location.search); var t = p.get('_kt'); if (t) { sessionStorage.setItem('KIMS_TOKEN', t); p.delete('_kt'); if (history.replaceState) history.replaceState(null, '', '?' + p.toString()); } } catch(e) {}
+    document.addEventListener('click', function(ev) {
+      var a = ev.target && ev.target.closest ? ev.target.closest('a[href*="?page="]') : null;
+      if (!a) return;
+      var href = a.getAttribute('href') || '';
+      var i = href.indexOf('?page='); if (i === -1) return;
+      ev.preventDefault();
+      var tok = sessionStorage.getItem('KIMS_TOKEN') || '';
+      var url = getExecUrl() + href.substring(i);
+      if (tok && url.indexOf('_kt=') === -1) url += '&_kt=' + encodeURIComponent(tok);
+      window.open(url, a.getAttribute('target') === '_blank' ? '_blank' : '_top');
+    });
+  })();
+
+  function callAPI(action, params) {
+    var payload = Object.assign({ action: action, token: getToken() }, params || {});
+    return new Promise(function(resolve, reject) {
+      google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(reject)
+        .handleRequest(payload);
+    });
+  }
+
+  let charts = {};
+  let rejectingId = null;
+
+  const chartFont = { family: 'Sarabun', size: 13 };
+  const chartDefaults = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { font: chartFont } },
+      tooltip: { titleFont: chartFont, bodyFont: chartFont }
+    }
+  };
+  const typeColors = ['#1A5276','#2E86C1','#148F77','#F39C12','#8E44AD','#85929E'];
+
+  // ── Init ───────────────────────────────────────────────
+  window.onload = function() {
+    // Auth check
+    callAPI('getCurrentUser').then(function(res) {
+      if (!res || !res.success) {
+        sessionStorage.removeItem('KIMS_TOKEN'); sessionStorage.removeItem('KIMS_USER'); goTo('login'); return;
+      }
+      const u = res.data;
+      if (!['ADMIN','SUPERADMIN','HEAD'].includes(u.role)) { goTo('index'); return; }
+      const su = document.getElementById('sidebarUser');
+      su.innerHTML = `<div class="label">เข้าสู่ระบบเป็น</div><div class="name">${u.full_name}</div><div class="role">${u.role}</div>`;
+      if (u.role === 'SUPERADMIN') document.getElementById('superAdminNav').style.display = 'block';
+      loadDashboard();
+    }).catch(function() { goTo('login'); });
+  };
+
+  function logout() {
+    callAPI('logout').then(function() { sessionStorage.removeItem('KIMS_TOKEN'); sessionStorage.removeItem('KIMS_USER'); goTo('login'); });
+  }
+
+  // ── Load Dashboard ──────────────────────────────────────
+  function loadDashboard() {
+    document.getElementById('lastUpdated').textContent = 'กำลังโหลด...';
+
+    callAPI('getDashboardData').then(function(res) {
+        if (!res || !res.success) {
+          document.getElementById('lastUpdated').textContent = 'โหลดข้อมูลไม่สำเร็จ';
+          return;
+        }
+        const d = res.data;
+        renderKPI(d.kpi);
+        renderTypeChart(d.byType);
+        renderYearChart(d.byYear);
+        renderDeptChart(d.byDept);
+        renderTrendChart(d.monthlyTrend);
+        renderTopViewed(d.topViewed);
+        renderTopTeachers(d.topTeachers);
+        renderPendingList(d.pendingList);
+        document.getElementById('pendingBadge').textContent = d.kpi.pending;
+        document.getElementById('lastUpdated').textContent = 'อัปเดต: ' + new Date().toLocaleTimeString('th-TH');
+      }).catch(function() {
+        document.getElementById('lastUpdated').textContent = 'เกิดข้อผิดพลาด';
+      });
+  }
+
+  function renderKPI(kpi) {
+    document.getElementById('kpiTotal').textContent = (kpi.total || 0).toLocaleString();
+    document.getElementById('kpiPublished').textContent = (kpi.published || 0).toLocaleString();
+    document.getElementById('kpiPending').textContent = (kpi.pending || 0).toLocaleString();
+    document.getElementById('kpiTeachers').textContent = (kpi.active_teachers || 0).toLocaleString();
+  }
+
+  function renderTypeChart(byType) {
+    const labels = byType.map(t => t.name);
+    const data = byType.map(t => t.count);
+    const ctx = document.getElementById('typeChart');
+    if (charts.type) charts.type.destroy();
+    charts.type = new Chart(ctx, {
+      type: 'doughnut',
+      data: { labels, datasets: [{ data, backgroundColor: typeColors, borderWidth: 2, borderColor: '#fff' }] },
+      options: { ...chartDefaults, cutout: '60%', plugins: { ...chartDefaults.plugins, legend: { position: 'bottom', labels: { font: chartFont, padding: 8, boxWidth: 12 } } } }
+    });
+  }
+
+  function renderYearChart(byYear) {
+    const ctx = document.getElementById('yearChart');
+    if (charts.year) charts.year.destroy();
+    charts.year = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: byYear.map(y => 'ปี ' + y.year),
+        datasets: [{ label: 'จำนวนนวัตกรรม', data: byYear.map(y => y.count), backgroundColor: '#2E86C1', borderRadius: 6 }]
+      },
+      options: { ...chartDefaults, plugins: { ...chartDefaults.plugins, legend: { display: false } }, scales: { y: { ticks: { font: chartFont } }, x: { ticks: { font: chartFont } } } }
+    });
+  }
+
+  function renderDeptChart(byDept) {
+    const ctx = document.getElementById('deptChart');
+    if (charts.dept) charts.dept.destroy();
+    charts.dept = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: byDept.map(d => d.dept.replace('และเทคโนโลยี', '').replace('ศาสนา และวัฒนธรรม', '')),
+        datasets: [{ label: 'จำนวน', data: byDept.map(d => d.count), backgroundColor: '#148F77', borderRadius: 4 }]
+      },
+      options: { ...chartDefaults, indexAxis: 'y', plugins: { ...chartDefaults.plugins, legend: { display: false } }, scales: { x: { ticks: { font: chartFont } }, y: { ticks: { font: { ...chartFont, size: 11 } } } } }
+    });
+  }
+
+  function renderTrendChart(trend) {
+    const ctx = document.getElementById('trendChart');
+    if (charts.trend) charts.trend.destroy();
+    charts.trend = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: trend.map(t => t.label),
+        datasets: [{ label: 'นวัตกรรม', data: trend.map(t => t.count), borderColor: '#1A5276', backgroundColor: 'rgba(26,82,118,0.08)', fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#1A5276' }]
+      },
+      options: { ...chartDefaults, plugins: { ...chartDefaults.plugins, legend: { display: false } }, scales: { y: { ticks: { font: chartFont }, min: 0 }, x: { ticks: { font: { ...chartFont, size: 11 } } } } }
+    });
+  }
+
+  function renderTopViewed(items) {
+    const tbody = document.querySelector('#topViewedTable tbody');
+    if (!items || !items.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999;padding:20px;">ยังไม่มีข้อมูล</td></tr>'; return; }
+    tbody.innerHTML = items.map((item, i) => `
+      <tr>
+        <td><span class="rank-num ${i < 3 ? 'top-3' : ''}">${i + 1}</span></td>
+        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escHtml(item.title)}">${escHtml(item.title)}</td>
+        <td style="font-size:12px;color:var(--dark-gray);">${escHtml(item.teacher_name)}</td>
+        <td><i class="fas fa-eye" style="color:var(--secondary);"></i> ${(item.view_count || 0).toLocaleString()}</td>
+      </tr>
+    `).join('');
+  }
+
+  function renderTopTeachers(teachers) {
+    const tbody = document.querySelector('#topTeachersTable tbody');
+    if (!teachers || !teachers.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999;padding:20px;">ยังไม่มีข้อมูล</td></tr>'; return; }
+    tbody.innerHTML = teachers.map((t, i) => `
+      <tr>
+        <td><span class="rank-num ${i < 3 ? 'top-3' : ''}">${i + 1}</span></td>
+        <td>${escHtml(t.teacher_name)}</td>
+        <td style="font-size:12px;color:var(--dark-gray);">${escHtml(t.department)}</td>
+        <td><strong>${t.count}</strong> ชิ้น</td>
+      </tr>
+    `).join('');
+  }
+
+  function renderPendingList(items) {
+    const el = document.getElementById('pendingList');
+    const typeIcons = { '01':'🖥️', '02':'🔬', '03':'📋', '04':'🧩', '05':'💻', '99':'📁' };
+    if (!items || !items.length) {
+      el.innerHTML = '<div style="text-align:center;color:#999;padding:30px;"><i class="fas fa-check-circle" style="font-size:28px;margin-bottom:8px;color:#27AE60;"></i><br>ไม่มีนวัตกรรมรออนุมัติ</div>';
+      return;
+    }
+    el.innerHTML = items.map(item => `
+      <div class="pending-item">
+        <div class="pending-icon">${typeIcons[item.type_code] || '📄'}</div>
+        <div class="pending-info">
+          <div class="pending-title">${escHtml(item.title)}</div>
+          <div class="pending-meta"><i class="fas fa-user"></i> ${escHtml(item.teacher_name)} | <i class="fas fa-tag"></i> ${escHtml(item.type_name)}</div>
+        </div>
+        <div class="pending-actions">
+          <button class="btn-approve" onclick="approveInnovation('${item.innovation_id}')"><i class="fas fa-check"></i> อนุมัติ</button>
+          <button class="btn-reject" onclick="openRejectModal('${item.innovation_id}')"><i class="fas fa-times"></i> ปฏิเสธ</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ── Approve/Reject ─────────────────────────────────────
+  function approveInnovation(id) {
+    if (!confirm('ยืนยันการอนุมัตินวัตกรรมนี้?')) return;
+    callAPI('approveInnovation', { innovation_id: id }).then(function(res) {
+        if (res && res.success) { alert('อนุมัติเรียบร้อยแล้ว'); loadDashboard(); }
+        else alert('เกิดข้อผิดพลาด: ' + (res && res.error));
+      });
+  }
+
+  function openRejectModal(id) {
+    rejectingId = id;
+    document.getElementById('rejectReason').value = '';
+    document.getElementById('rejectModal').classList.add('show');
+  }
+  function closeRejectModal() {
+    rejectingId = null;
+    document.getElementById('rejectModal').classList.remove('show');
+  }
+  function confirmReject() {
+    const reason = document.getElementById('rejectReason').value.trim();
+    if (!reason) { alert('กรุณาระบุเหตุผล'); return; }
+    callAPI('rejectInnovation', { innovation_id: rejectingId, reason: reason }).then(function(res) {
+        if (res && res.success) { alert('ปฏิเสธเรียบร้อยแล้ว'); closeRejectModal(); loadDashboard(); }
+        else alert('เกิดข้อผิดพลาด: ' + (res && res.error));
+      });
+  }
+
+  function escHtml(str) { const d = document.createElement('div'); d.textContent = str || ''; return d.innerHTML; }
+</script>
+</body>
+</html>

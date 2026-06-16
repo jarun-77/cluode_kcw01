@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #1A5276; --secondary: #2E86C1; --accent: #148F77;
+      --gray-bg: #F2F3F4; --dark-gray: #566573;
+      --font-main: 'Sarabun', sans-serif; --font-heading: 'Prompt', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-main);
+      background: linear-gradient(135deg, #1A5276 0%, #2E86C1 60%, #148F77 100%);
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      background: white; border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      width: 100%; max-width: 420px; overflow: hidden;
+    }
+    .card-head {
+      background: var(--primary); color: white;
+      text-align: center; padding: 32px 28px 28px;
+    }
+    .logo {
+      width: 64px; height: 64px;
+      background: rgba(255,255,255,0.15); border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px; font-size: 28px;
+    }
+    .card-head h2 { font-family: var(--font-heading); font-size: 1.4rem; margin-bottom: 4px; }
+    .card-head p  { font-size: 13px; opacity: 0.8; }
+    .card-body { padding: 28px; }
+    .card-foot {
+      text-align: center; padding: 16px 28px;
+      border-top: 1px solid #eee; font-size: 13px; color: var(--dark-gray);
+    }
+    .card-foot a { color: var(--secondary); text-decoration: none; }
+
+    .alert {
+      border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;
+      font-size: 14px; display: none; align-items: center; gap: 8px;
+    }
+    .alert.error   { background:#FADBD8; color:#922B21; border:1px solid #F1948A; display:flex; }
+    .alert.success { background:#D5F5E3; color:#1E8449; border:1px solid #82E0AA; display:flex; }
+
+    .hint {
+      background: var(--gray-bg); border-radius: 8px;
+      padding: 10px 14px; font-size: 13px; color: var(--dark-gray);
+      margin-bottom: 20px; border-left: 3px solid var(--secondary);
+    }
+    .label { display: block; font-size: 14px; font-weight: 600; color: #333; margin-bottom: 6px; }
+    .input-wrap { position: relative; margin-bottom: 18px; }
+    .input-wrap > i { position:absolute; left:13px; top:50%; transform:translateY(-50%); color:var(--dark-gray); }
+    .input-wrap input {
+      width: 100%; border: 2px solid #e0e0e0; border-radius: 10px;
+      padding: 12px 14px 12px 40px;
+      font-family: var(--font-main); font-size: 15px; outline: none;
+      background: var(--gray-bg); transition: border-color .2s;
+    }
+    .input-wrap input:focus { border-color: var(--secondary); background: white; }
+    .toggle-pw {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: var(--dark-gray); padding: 4px;
+    }
+    .btn {
+      width: 100%; background: var(--primary); color: white;
+      border: none; border-radius: 10px; padding: 14px;
+      font-family: var(--font-main); font-size: 16px; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: background .2s;
+    }
+    .btn:hover { background: var(--secondary); }
+    .btn:disabled { opacity: .6; cursor: not-allowed; }
+    .spin { animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .back { color: rgba(255,255,255,.8); text-decoration: none; font-size: 13px; margin-top: 16px; display: block; text-align: center; }
+    .back:hover { color: white; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-head">
+    <div class="logo"><i class="fas fa-lightbulb"></i></div>
+    <h2>KIMS</h2>
+    <p>ระบบบริหารจัดการนวัตกรรมทางการศึกษา<br>โรงเรียนกระแชงวิทยา</p>
+  </div>
+
+  <div class="card-body">
+    <div class="alert" id="alertEl"><i class="fas fa-exclamation-circle"></i><span id="alertTxt"></span></div>
+
+    <div class="hint">
+      <i class="fas fa-info-circle" style="color:var(--secondary);margin-right:6px;"></i>
+      ใช้ <strong>เลขประจำตัวประชาชน 13 หลัก</strong> และ <strong>รหัสผ่านที่ได้รับจากผู้ดูแลระบบ</strong>
+    </div>
+
+    <label class="label"><i class="fas fa-id-card" style="color:var(--primary);margin-right:4px;"></i>เลขประจำตัวประชาชน</label>
+    <div class="input-wrap">
+      <i class="fas fa-id-card"></i>
+      <input type="text" id="idCard" placeholder="1234567890123" maxlength="13" inputmode="numeric" autocomplete="username">
+    </div>
+
+    <label class="label"><i class="fas fa-lock" style="color:var(--primary);margin-right:4px;"></i>รหัสผ่าน</label>
+    <div class="input-wrap">
+      <i class="fas fa-lock"></i>
+      <input type="password" id="pw" placeholder="รหัสผ่าน" autocomplete="current-password">
+      <button type="button" class="toggle-pw" onclick="togglePw()"><i class="fas fa-eye" id="eyeIcon"></i></button>
+    </div>
+
+    <button class="btn" id="loginBtn" onclick="doLogin()">
+      <i class="fas fa-sign-in-alt" id="loginIcon"></i>
+      <span id="loginTxt">เข้าสู่ระบบ</span>
+    </button>
+  </div>
+
+  <div class="card-foot">
+    <a href="javascript:void(0)" onclick="goTo('index')"><i class="fas fa-arrow-left"></i> กลับหน้าหลัก</a>
+    &nbsp;|&nbsp; มีปัญหา? ติดต่อผู้ดูแลระบบ
+  </div>
+</div>
+
+<a href="javascript:void(0)" class="back" onclick="goTo('index')">
+  <i class="fas fa-globe"></i> ดูนวัตกรรมโดยไม่ต้องเข้าสู่ระบบ
+</a>
+
+<script>
+  // ── EXEC_URL ถูก inject โดย Code.gs ตอน serve ──────────
+  var EXEC_URL = "";  // placeholder — Code.gs จะแทนค่าจริง
+
+  function getExecUrl() { return EXEC_URL || window.location.href.split('?')[0]; }
+  function goTo(page) {
+    var token = sessionStorage.getItem('KIMS_TOKEN') || '';
+    var url = getExecUrl() + '?page=' + page;
+    if (token) url += '&_kt=' + encodeURIComponent(token);
+    window.open(url, '_top');
+  }
+  function getToken() { return sessionStorage.getItem('KIMS_TOKEN') || ''; }
+  // Restore token from URL param (after cross-origin navigation)
+  (function() {
+    try { var p = new URLSearchParams(window.location.search); var t = p.get('_kt'); if (t) { sessionStorage.setItem('KIMS_TOKEN', t); p.delete('_kt'); if (history.replaceState) history.replaceState(null, '', '?' + p.toString()); } } catch(e) {}
+    document.addEventListener('click', function(ev) {
+      var a = ev.target && ev.target.closest ? ev.target.closest('a[href*="?page="]') : null;
+      if (!a) return;
+      var href = a.getAttribute('href') || '';
+      var i = href.indexOf('?page='); if (i === -1) return;
+      ev.preventDefault();
+      var tok = sessionStorage.getItem('KIMS_TOKEN') || '';
+      var url = getExecUrl() + href.substring(i);
+      if (tok && url.indexOf('_kt=') === -1) url += '&_kt=' + encodeURIComponent(tok);
+      window.open(url, a.getAttribute('target') === '_blank' ? '_blank' : '_top');
+    });
+  })();
+
+  function callAPI(action, params) {
+    var payload = Object.assign({ action: action, token: getToken() }, params || {});
+    return new Promise(function(resolve, reject) {
+      google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(reject)
+        .handleRequest(payload);
+    });
+  }
+
+    // ──────────────────────────────────────────
+  // ตรวจสอบ session ที่มีอยู่
+  // ──────────────────────────────────────────
+  window.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('idCard').focus();
+    var token = sessionStorage.getItem('KIMS_TOKEN');
+    if (token) {
+      callAPI('getCurrentUser', { token: token }).then(function(res) {
+        if (res && res.success) {
+          var role = res.data.role;
+          goTo(['ADMIN','SUPERADMIN'].includes(role) ? 'admin-dashboard' : 'my-innovations');
+        }
+      }).catch(function() {});
+    }
+  });
+
+  // ──────────────────────────────────────────
+  // UI helpers
+  // ──────────────────────────────────────────
+  function togglePw() {
+    var pw = document.getElementById('pw');
+    var ic = document.getElementById('eyeIcon');
+    if (pw.type === 'password') { pw.type = 'text'; ic.className = 'fas fa-eye-slash'; }
+    else { pw.type = 'password'; ic.className = 'fas fa-eye'; }
+  }
+
+  function showAlert(type, msg) {
+    var el  = document.getElementById('alertEl');
+    var txt = document.getElementById('alertTxt');
+    el.className = 'alert ' + type;
+    txt.textContent = msg;
+  }
+
+  function setLoading(on) {
+    var btn  = document.getElementById('loginBtn');
+    var icon = document.getElementById('loginIcon');
+    var txt  = document.getElementById('loginTxt');
+    btn.disabled = on;
+    icon.className = on ? 'fas fa-spinner spin' : 'fas fa-sign-in-alt';
+    txt.textContent = on ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ';
+  }
+
+  // ──────────────────────────────────────────
+  // Login
+  // ──────────────────────────────────────────
+  document.addEventListener('keydown', function(e) { if (e.key === 'Enter') doLogin(); });
+
+  function doLogin() {
+    var idCard = document.getElementById('idCard').value.replace(/\D/g,'').trim();
+    var pw     = document.getElementById('pw').value;
+
+    if (!idCard || idCard.length !== 13) {
+      showAlert('error', 'กรุณากรอกเลขประจำตัวประชาชน 13 หลัก');
+      document.getElementById('idCard').focus();
+      return;
+    }
+    if (!pw) {
+      showAlert('error', 'กรุณากรอกรหัสผ่าน');
+      document.getElementById('pw').focus();
+      return;
+    }
+
+    setLoading(true);
+    document.getElementById('alertEl').className = 'alert';
+
+    callAPI('login', { id_card: idCard, password: pw })
+      .then(function(res) {
+        setLoading(false);
+        if (res && res.success) {
+          showAlert('success', 'เข้าสู่ระบบสำเร็จ กำลังนำทาง...');
+          sessionStorage.setItem('KIMS_TOKEN', res.data.token);
+          sessionStorage.setItem('KIMS_USER',  JSON.stringify(res.data));
+          var role = res.data.role;
+          setTimeout(function() {
+            goTo(['ADMIN','SUPERADMIN'].includes(role) ? 'admin-dashboard' : 'my-innovations');
+          }, 600);
+        } else {
+          showAlert('error', (res && res.error) || 'เกิดข้อผิดพลาด กรุณาลองใหม่');
+          document.getElementById('pw').value = '';
+          document.getElementById('pw').focus();
+        }
+      })
+      .catch(function(err) {
+        setLoading(false);
+        showAlert('error', 'ไม่สามารถเชื่อมต่อระบบได้ กรุณาลองใหม่');
+      });
+  }
+</script>
+</body>
+</html>

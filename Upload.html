@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #1A5276; --secondary: #2E86C1; --accent: #148F77;
+      --light-blue: #D6EAF8; --light-teal: #D5F5E3;
+      --gray-bg: #F2F3F4; --dark-gray: #566573;
+      --font-main: 'Sarabun', sans-serif; --font-heading: 'Prompt', sans-serif;
+      --radius: 12px; --shadow: 0 2px 12px rgba(0,0,0,0.08); --transition: all 0.25s ease;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-main); background: var(--gray-bg); color: #2c3e50; font-size: 16px; }
+
+    .header { background: var(--primary); color: white; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
+    .header-inner { max-width: 900px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: white; font-family: var(--font-heading); font-size: 18px; font-weight: 700; }
+    .logo i { font-size: 22px; }
+    nav a { color: rgba(255,255,255,0.85); text-decoration: none; padding: 7px 14px; border-radius: 6px; font-size: 14px; transition: var(--transition); }
+    nav a:hover { background: rgba(255,255,255,0.15); color: white; }
+
+    .container { max-width: 900px; margin: 30px auto; padding: 0 20px 40px; }
+    .page-title { font-family: var(--font-heading); font-size: 1.5rem; color: var(--primary); margin-bottom: 6px; display: flex; align-items: center; gap: 10px; }
+    .page-sub { color: var(--dark-gray); font-size: 14px; margin-bottom: 24px; }
+
+    /* Card */
+    .card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); padding: 28px; margin-bottom: 20px; }
+    .card-section-title { font-family: var(--font-heading); font-size: 1rem; font-weight: 600; color: var(--primary); margin-bottom: 18px; padding-bottom: 10px; border-bottom: 2px solid var(--light-blue); display: flex; align-items: center; gap: 8px; }
+
+    /* Form */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .form-row.single { grid-template-columns: 1fr; }
+    .form-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 14px; font-weight: 600; color: #444; margin-bottom: 6px; }
+    .form-label .req { color: #E74C3C; margin-left: 2px; }
+    .form-control {
+      width: 100%;
+      border: 2px solid #e8e8e8;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: var(--font-main);
+      font-size: 15px;
+      color: #333;
+      background: white;
+      transition: var(--transition);
+      outline: none;
+    }
+    .form-control:focus { border-color: var(--secondary); }
+    .form-control.error { border-color: #E74C3C; }
+    textarea.form-control { resize: vertical; min-height: 120px; line-height: 1.6; }
+    .char-count { text-align: right; font-size: 12px; color: var(--dark-gray); margin-top: 4px; }
+    .char-count.warn { color: #E74C3C; }
+
+    /* Checkbox grade level */
+    .grade-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+    .grade-item { display: flex; align-items: center; gap: 6px; }
+    .grade-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+    .grade-item label { font-size: 14px; cursor: pointer; }
+
+    /* Tags */
+    .tags-container {
+      border: 2px solid #e8e8e8;
+      border-radius: 8px;
+      padding: 8px 10px;
+      display: flex; flex-wrap: wrap; gap: 6px;
+      min-height: 46px;
+      cursor: text;
+      transition: var(--transition);
+      background: white;
+    }
+    .tags-container:focus-within { border-color: var(--secondary); }
+    .tag-item { background: var(--light-blue); color: var(--primary); border-radius: 20px; padding: 3px 10px; font-size: 13px; display: flex; align-items: center; gap: 5px; }
+    .tag-remove { cursor: pointer; opacity: 0.7; font-size: 12px; }
+    .tag-remove:hover { opacity: 1; }
+    .tag-input { border: none; outline: none; font-family: var(--font-main); font-size: 14px; min-width: 120px; flex: 1; }
+
+    /* File Upload */
+    .file-drop-zone {
+      border: 2px dashed #c5d8ea;
+      border-radius: 10px;
+      padding: 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      background: #fafbfd;
+    }
+    .file-drop-zone:hover, .file-drop-zone.drag-over { border-color: var(--secondary); background: var(--light-blue); }
+    .file-drop-icon { font-size: 36px; color: var(--secondary); margin-bottom: 10px; }
+    .file-drop-text { font-size: 15px; color: #555; margin-bottom: 4px; }
+    .file-drop-sub { font-size: 12px; color: var(--dark-gray); }
+    .file-input-hidden { display: none; }
+
+    .file-list { margin-top: 12px; }
+    .file-item {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--light-blue);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .file-item-icon { color: var(--primary); }
+    .file-item-name { flex: 1; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-item-size { color: var(--dark-gray); white-space: nowrap; }
+    .file-remove { background: none; border: none; color: #E74C3C; cursor: pointer; font-size: 16px; padding: 2px; }
+    .upload-progress { margin-top: 6px; height: 4px; background: #eee; border-radius: 2px; overflow: hidden; display: none; }
+    .upload-bar { height: 100%; background: var(--secondary); transition: width 0.3s; width: 0%; }
+
+    /* Submit */
+    .form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
+    .btn { padding: 12px 28px; border-radius: 8px; font-family: var(--font-main); font-size: 15px; font-weight: 600; cursor: pointer; transition: var(--transition); border: none; display: flex; align-items: center; gap: 8px; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--secondary); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-secondary { background: white; color: #555; border: 2px solid #ddd; }
+    .btn-secondary:hover { border-color: var(--secondary); color: var(--secondary); }
+
+    /* Alert */
+    .alert { border-radius: 8px; padding: 14px 18px; margin-bottom: 18px; font-size: 14px; display: none; align-items: center; gap: 10px; }
+    .alert.error { background: #FADBD8; color: #922B21; border: 1px solid #F1948A; display: flex; }
+    .alert.success { background: #D5F5E3; color: #1E8449; border: 1px solid #82E0AA; display: flex; }
+    .alert.info { background: var(--light-blue); color: var(--primary); border: 1px solid #a9cce3; display: flex; }
+
+    .spinner { animation: spin 1s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    @media (max-width: 640px) {
+      .form-row { grid-template-columns: 1fr; }
+      .form-row.triple { grid-template-columns: 1fr 1fr; }
+      .grade-grid { grid-template-columns: repeat(3, 1fr); }
+      .form-actions { flex-direction: column; }
+      .btn { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-inner">
+    <a href="?page=index" class="logo"><i class="fas fa-lightbulb"></i> KIMS</a>
+    <nav>
+      <a href="?page=my-innovations"><i class="fas fa-folder"></i> นวัตกรรมของฉัน</a>
+      <a href="?page=index"><i class="fas fa-home"></i> หน้าหลัก</a>
+    </nav>
+  </div>
+</header>
+
+<!-- Main -->
+<div class="container">
+  <h1 class="page-title"><i class="fas fa-cloud-upload-alt"></i> อัปโหลดนวัตกรรม</h1>
+  <p class="page-sub">กรอกข้อมูลนวัตกรรมและแนบไฟล์ให้ครบถ้วน จากนั้นกด "ส่งนวัตกรรม" เพื่อส่งให้ผู้ดูแลระบบตรวจสอบ</p>
+
+  <div class="alert" id="alertBox">
+    <i class="fas fa-info-circle"></i>
+    <span id="alertText"></span>
+  </div>
+
+  <!-- ─── Section 1: ข้อมูลพื้นฐาน ─────────────────────── -->
+  <div class="card">
+    <div class="card-section-title"><i class="fas fa-info-circle"></i> ข้อมูลพื้นฐาน</div>
+
+    <!-- ชื่อนวัตกรรม -->
+    <div class="form-group">
+      <label class="form-label">ชื่อนวัตกรรม <span class="req">*</span></label>
+      <input type="text" id="title" class="form-control" placeholder="ระบุชื่อนวัตกรรม" maxlength="200" oninput="updateCount('title','titleCount',200)">
+      <div class="char-count"><span id="titleCount">0</span>/200</div>
+    </div>
+
+    <div class="form-row">
+      <!-- ประเภทนวัตกรรม -->
+      <div class="form-group">
+        <label class="form-label">ประเภทนวัตกรรม <span class="req">*</span></label>
+        <select id="typeCode" class="form-control">
+          <option value="">-- เลือกประเภท --</option>
+          <option value="01">01 สื่อการสอน / CAI</option>
+          <option value="02">02 วิจัยในชั้นเรียน</option>
+          <option value="03">03 แผนการจัดการเรียนรู้</option>
+          <option value="04">04 ชุดกิจกรรม / ใบงาน</option>
+          <option value="05">05 เทคโนโลยีทางการศึกษา</option>
+          <option value="99">99 อื่นๆ</option>
+        </select>
+      </div>
+
+      <!-- กลุ่มสาระ -->
+      <div class="form-group">
+        <label class="form-label">กลุ่มสาระการเรียนรู้ <span class="req">*</span></label>
+        <select id="department" class="form-control">
+          <option value="">-- เลือกกลุ่มสาระ --</option>
+          <option>ภาษาไทย</option>
+          <option>คณิตศาสตร์</option>
+          <option>วิทยาศาสตร์และเทคโนโลยี</option>
+          <option>สังคมศึกษา ศาสนา และวัฒนธรรม</option>
+          <option>สุขศึกษาและพลศึกษา</option>
+          <option>ศิลปะ</option>
+          <option>การงานอาชีพ</option>
+          <option>ภาษาต่างประเทศ</option>
+          <option>กิจกรรมพัฒนาผู้เรียน</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ระดับชั้น -->
+    <div class="form-group">
+      <label class="form-label">ระดับชั้น <span class="req">*</span></label>
+      <div class="grade-grid">
+        <div class="grade-item"><input type="checkbox" id="g1" value="ม.1"><label for="g1">ม.1</label></div>
+        <div class="grade-item"><input type="checkbox" id="g2" value="ม.2"><label for="g2">ม.2</label></div>
+        <div class="grade-item"><input type="checkbox" id="g3" value="ม.3"><label for="g3">ม.3</label></div>
+        <div class="grade-item"><input type="checkbox" id="g4" value="ม.4"><label for="g4">ม.4</label></div>
+        <div class="grade-item"><input type="checkbox" id="g5" value="ม.5"><label for="g5">ม.5</label></div>
+        <div class="grade-item"><input type="checkbox" id="g6" value="ม.6"><label for="g6">ม.6</label></div>
+      </div>
+    </div>
+
+    <div class="form-row triple">
+      <!-- ปีการศึกษา -->
+      <div class="form-group">
+        <label class="form-label">ปีการศึกษา <span class="req">*</span></label>
+        <select id="academicYear" class="form-control"></select>
+      </div>
+      <!-- ภาคเรียน -->
+      <div class="form-group">
+        <label class="form-label">ภาคเรียน <span class="req">*</span></label>
+        <select id="semester" class="form-control">
+          <option value="">-- เลือก --</option>
+          <option value="1">ภาคเรียนที่ 1</option>
+          <option value="2">ภาคเรียนที่ 2</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- คำอธิบาย -->
+    <div class="form-group">
+      <label class="form-label">คำอธิบาย / บทคัดย่อ <span class="req">*</span></label>
+      <textarea id="description" class="form-control" placeholder="อธิบายนวัตกรรม เนื้อหา วิธีใช้งาน ผลที่ได้รับ..." maxlength="2000" oninput="updateCount('description','descCount',2000)"></textarea>
+      <div class="char-count"><span id="descCount">0</span>/2000</div>
+    </div>
+
+    <!-- Tags -->
+    <div class="form-group">
+      <label class="form-label">คำสำคัญ (Tags)</label>
+      <div class="tags-container" id="tagsContainer" onclick="document.getElementById('tagInput').focus()">
+        <input type="text" id="tagInput" class="tag-input" placeholder="พิมพ์คำสำคัญ แล้วกด Enter หรือ , (สูงสุด 10 คำ)">
+      </div>
+      <input type="hidden" id="tagsHidden">
+    </div>
+  </div>
+
+  <!-- ─── Section 2: ไฟล์แนบ ──────────────────────────── -->
+  <div class="card">
+    <div class="card-section-title"><i class="fas fa-paperclip"></i> ไฟล์แนบและลิงก์ <small style="font-weight:400;font-size:12px;">(ต้องมีอย่างน้อย 1 ไฟล์ หรือ 1 URL)</small></div>
+
+    <!-- File Drop Zone -->
+    <div class="file-drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" ondrop="handleDrop(event)" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')">
+      <div class="file-drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+      <div class="file-drop-text">คลิกหรือลากไฟล์มาวางที่นี่</div>
+      <div class="file-drop-sub">รองรับ PDF, Word, Excel, PPT, MP4, รูปภาพ | ขนาดสูงสุด 100 MB ต่อไฟล์</div>
+    </div>
+    <input type="file" id="fileInput" class="file-input-hidden" multiple onchange="handleFiles(this.files)">
+    <div class="file-list" id="fileList"></div>
+    <div class="upload-progress" id="uploadProgress"><div class="upload-bar" id="uploadBar"></div></div>
+
+    <!-- Link URL -->
+    <div class="form-group" style="margin-top:20px;">
+      <label class="form-label"><i class="fas fa-link" style="color:var(--secondary);"></i> Link URL (ถ้ามี)</label>
+      <div style="display:flex;gap:8px;">
+        <input type="url" id="linkUrl" class="form-control" placeholder="https://..." style="flex:1;">
+        <button type="button" class="btn btn-secondary" onclick="checkUrl()" style="padding:10px 16px;white-space:nowrap;">
+          <i class="fas fa-check-circle"></i> ตรวจสอบ
+        </button>
+      </div>
+      <div id="urlStatus" style="font-size:12px;margin-top:4px;"></div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="form-actions">
+    <button class="btn btn-secondary" onclick="history.back()">
+      <i class="fas fa-times"></i> ยกเลิก
+    </button>
+    <button class="btn btn-primary" id="submitBtn" onclick="submitInnovation()">
+      <i class="fas fa-paper-plane"></i> ส่งนวัตกรรม
+    </button>
+  </div>
+</div>
+
+<script>
+  // ── EXEC_URL ถูก inject โดย Code.gs ตอน serve ──────────
+  var EXEC_URL = "";  // placeholder — Code.gs จะแทนค่าจริง
+
+  function getExecUrl() { return EXEC_URL || window.location.href.split('?')[0]; }
+  function goTo(page) {
+    var token = sessionStorage.getItem('KIMS_TOKEN') || '';
+    var url = getExecUrl() + '?page=' + page;
+    if (token) url += '&_kt=' + encodeURIComponent(token);
+    window.open(url, '_top');
+  }
+  (function() {
+    try { var p = new URLSearchParams(window.location.search); var t = p.get('_kt'); if (t) { sessionStorage.setItem('KIMS_TOKEN', t); p.delete('_kt'); if (history.replaceState) history.replaceState(null, '', '?' + p.toString()); } } catch(e) {}
+    document.addEventListener('click', function(ev) {
+      var a = ev.target && ev.target.closest ? ev.target.closest('a[href*="?page="]') : null;
+      if (!a) return;
+      var href = a.getAttribute('href') || '';
+      var i = href.indexOf('?page='); if (i === -1) return;
+      ev.preventDefault();
+      var tok = sessionStorage.getItem('KIMS_TOKEN') || '';
+      var url = getExecUrl() + href.substring(i);
+      if (tok && url.indexOf('_kt=') === -1) url += '&_kt=' + encodeURIComponent(tok);
+      window.open(url, a.getAttribute('target') === '_blank' ? '_blank' : '_top');
+    });
+  })();
+  function getToken() { return sessionStorage.getItem('KIMS_TOKEN') || ''; }
+
+  function callAPI(action, params) {
+    var payload = Object.assign({ action: action, token: getToken() }, params || {});
+    return new Promise(function(resolve, reject) {
+      google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(reject)
+        .handleRequest(payload);
+    });
+  }
+
+  let uploadedFiles = [];  // { base64, fileName, mimeType, size }
+  let tags = [];
+
+  // ── Init ───────────────────────────────────────────────
+  window.onload = function() {
+    // Auth check
+    callAPI('getCurrentUser').then(function(res) {
+      if (!res || !res.success) { sessionStorage.removeItem('KIMS_TOKEN'); sessionStorage.removeItem('KIMS_USER'); goTo('login'); }
+    }).catch(function() { goTo('login'); });
+
+    // Populate year dropdown
+    const sel = document.getElementById('academicYear');
+    sel.innerHTML = '<option value="">-- เลือกปีการศึกษา --</option>';
+    const y = new Date().getFullYear() + 543;
+    for (let i = 0; i <= 5; i++) {
+      const yr = y - i;
+      sel.innerHTML += `<option value="${yr}" ${i === 0 ? 'selected' : ''}>${yr}</option>`;
+    }
+
+    // Tag input
+    document.getElementById('tagInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag(this.value.trim()); this.value = ''; }
+      if (e.key === 'Backspace' && this.value === '' && tags.length > 0) removeTag(tags.length - 1);
+    });
+  };
+
+  // ── Character count ───────────────────────────────────
+  function updateCount(id, countId, max) {
+    const len = document.getElementById(id).value.length;
+    const el = document.getElementById(countId);
+    el.textContent = len;
+    el.parentElement.className = 'char-count' + (len > max * 0.9 ? ' warn' : '');
+  }
+
+  // ── Tags ──────────────────────────────────────────────
+  function addTag(text) {
+    text = text.replace(',', '').trim();
+    if (!text || tags.length >= 10 || tags.includes(text)) return;
+    tags.push(text);
+    renderTags();
+    updateTagsHidden();
+  }
+
+  function removeTag(i) {
+    tags.splice(i, 1);
+    renderTags();
+    updateTagsHidden();
+  }
+
+  function renderTags() {
+    const container = document.getElementById('tagsContainer');
+    const input = document.getElementById('tagInput');
+    container.innerHTML = '';
+    tags.forEach((t, i) => {
+      const span = document.createElement('span');
+      span.className = 'tag-item';
+      span.innerHTML = `${escHtml(t)} <span class="tag-remove" onclick="removeTag(${i})"><i class="fas fa-times"></i></span>`;
+      container.appendChild(span);
+    });
+    container.appendChild(input);
+  }
+
+  function updateTagsHidden() {
+    document.getElementById('tagsHidden').value = tags.join(',');
+  }
+
+  // ── Files ─────────────────────────────────────────────
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('dropZone').classList.remove('drag-over');
+    handleFiles(e.dataTransfer.files);
+  }
+
+  function handleFiles(fileList) {
+    Array.from(fileList).forEach(file => {
+      const maxBytes = 100 * 1024 * 1024;
+      if (file.size > maxBytes) {
+        showAlert('error', `ไฟล์ "${file.name}" ขนาดเกิน 100 MB`);
+        return;
+      }
+      const ext = file.name.split('.').pop().toLowerCase();
+      const allowed = ['pdf','doc','docx','xls','xlsx','ppt','pptx','mp4','jpg','jpeg','png','gif'];
+      if (!allowed.includes(ext)) {
+        showAlert('error', `ไม่รองรับไฟล์ .${ext}`);
+        return;
+      }
+      // Read as Base64
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        const base64 = ev.target.result.split(',')[1];
+        uploadedFiles.push({ base64, fileName: file.name, mimeType: file.type, size: file.size });
+        renderFileList();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderFileList() {
+    const icons = { 'pdf':'📄', 'doc':'📝', 'docx':'📝', 'xls':'📊', 'xlsx':'📊', 'ppt':'📊', 'pptx':'📊', 'mp4':'🎬', 'jpg':'🖼️', 'jpeg':'🖼️', 'png':'🖼️', 'gif':'🖼️' };
+    const list = document.getElementById('fileList');
+    list.innerHTML = uploadedFiles.map((f, i) => {
+      const ext = f.fileName.split('.').pop().toLowerCase();
+      const size = f.size < 1024 * 1024 ? (f.size / 1024).toFixed(1) + ' KB' : (f.size / 1024 / 1024).toFixed(1) + ' MB';
+      return `
+        <div class="file-item">
+          <span class="file-item-icon">${icons[ext] || '📁'}</span>
+          <span class="file-item-name">${escHtml(f.fileName)}</span>
+          <span class="file-item-size">${size}</span>
+          <button class="file-remove" onclick="removeFile(${i})" title="ลบ"><i class="fas fa-times"></i></button>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function removeFile(i) {
+    uploadedFiles.splice(i, 1);
+    renderFileList();
+  }
+
+  // ── URL Check ─────────────────────────────────────────
+  function checkUrl() {
+    const url = document.getElementById('linkUrl').value.trim();
+    const status = document.getElementById('urlStatus');
+    if (!url) return;
+    if (!url.startsWith('https://')) {
+      status.innerHTML = '<span style="color:#E74C3C;"><i class="fas fa-times-circle"></i> URL ต้องขึ้นต้น https://</span>';
+      return;
+    }
+    status.innerHTML = '<i class="fas fa-spinner" style="animation:spin 1s linear infinite;"></i> กำลังตรวจสอบ...';
+    callAPI('checkUrl', { url: url }).then(function(res) {
+      if (res && res.success) {
+        status.innerHTML = '<span style="color:#148F77;"><i class="fas fa-check-circle"></i> URL ใช้งานได้</span>';
+      } else {
+        status.innerHTML = '<span style="color:#E74C3C;"><i class="fas fa-times-circle"></i> ไม่สามารถเข้าถึง URL นี้ได้</span>';
+      }
+    });
+  }
+
+  // ── Submit ────────────────────────────────────────────
+  async function submitInnovation() {
+    // Validation
+    const title = document.getElementById('title').value.trim();
+    const typeCode = document.getElementById('typeCode').value;
+    const department = document.getElementById('department').value;
+    const academicYear = document.getElementById('academicYear').value;
+    const semester = document.getElementById('semester').value;
+    const description = document.getElementById('description').value.trim();
+    const linkUrl = document.getElementById('linkUrl').value.trim();
+
+    const gradeLevel = Array.from(document.querySelectorAll('.grade-item input:checked')).map(c => c.value);
+
+    if (!title) return showAlert('error', 'กรุณากรอกชื่อนวัตกรรม');
+    if (!typeCode) return showAlert('error', 'กรุณาเลือกประเภทนวัตกรรม');
+    if (!department) return showAlert('error', 'กรุณาเลือกกลุ่มสาระการเรียนรู้');
+    if (gradeLevel.length === 0) return showAlert('error', 'กรุณาเลือกระดับชั้นอย่างน้อย 1 ชั้น');
+    if (!academicYear) return showAlert('error', 'กรุณาเลือกปีการศึกษา');
+    if (!semester) return showAlert('error', 'กรุณาเลือกภาคเรียน');
+    if (!description) return showAlert('error', 'กรุณากรอกคำอธิบาย/บทคัดย่อ');
+    if (uploadedFiles.length === 0 && !linkUrl) return showAlert('error', 'กรุณาแนบไฟล์ หรือระบุ Link URL อย่างน้อย 1 รายการ');
+    if (linkUrl && !linkUrl.startsWith('https://')) return showAlert('error', 'Link URL ต้องขึ้นต้น https://');
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner spinner"></i> กำลังอัปโหลดไฟล์...';
+
+    // Upload files one by one
+    let fileUrls = [];
+    let fileNames = [];
+    let progress = document.getElementById('uploadProgress');
+    let bar = document.getElementById('uploadBar');
+
+    if (uploadedFiles.length > 0) {
+      progress.style.display = 'block';
+      for (let i = 0; i < uploadedFiles.length; i++) {
+        const f = uploadedFiles[i];
+        bar.style.width = ((i / uploadedFiles.length) * 80) + '%';
+        btn.innerHTML = `<i class="fas fa-spinner spinner"></i> อัปโหลดไฟล์ ${i + 1}/${uploadedFiles.length}...`;
+
+        await new Promise((resolve, reject) => {
+          callAPI('uploadFile', {
+              base64Data: f.base64, fileName: f.fileName,
+              mimeType: f.mimeType, academicYear: parseInt(academicYear)
+            }).then(function(res) {
+              if (res && res.success) { fileUrls.push(res.data.url); fileNames.push(f.fileName); resolve(); }
+              else { reject(res && res.error || 'upload failed'); }
+            }).catch(reject);
+        }).catch(e => {
+          showAlert('error', 'อัปโหลดไฟล์ล้มเหลว: ' + e);
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-paper-plane"></i> ส่งนวัตกรรม';
+          progress.style.display = 'none';
+          throw e;
+        });
+      }
+      bar.style.width = '90%';
+    }
+
+    // Save innovation
+    btn.innerHTML = '<i class="fas fa-spinner spinner"></i> กำลังบันทึก...';
+
+    const innovationData = {
+      title: title,
+      type_code: typeCode,
+      department: department,
+      grade_level: gradeLevel,
+      academic_year: parseInt(academicYear),
+      semester: parseInt(semester),
+      description: description,
+      tags: tags.join(','),
+      file_urls: JSON.stringify(fileUrls),
+      file_names: JSON.stringify(fileNames),
+      link_url: linkUrl
+    };
+
+    callAPI('createInnovation', innovationData).then(function(res) {
+      bar.style.width = '100%';
+      btn.disabled = false;
+      if (res && res.success) {
+          showAlert('success', '✅ ส่งนวัตกรรมเรียบร้อยแล้ว! รอการอนุมัติจากผู้ดูแลระบบ');
+          btn.innerHTML = '<i class="fas fa-check"></i> ส่งแล้ว';
+          setTimeout(function() { goTo('my-innovations'); }, 2000);
+        } else {
+          showAlert('error', (res && res.error) || 'เกิดข้อผิดพลาด');
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-paper-plane"></i> ส่งนวัตกรรม';
+          progress.style.display = 'none';
+        }
+      }).catch(function(e) {
+        showAlert('error', 'เกิดข้อผิดพลาด: ' + e);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> ส่งนวัตกรรม';
+        progress.style.display = 'none';
+      });
+  }
+
+  function showAlert(type, msg) {
+    const el = document.getElementById('alertBox');
+    el.className = 'alert ' + type;
+    document.getElementById('alertText').textContent = msg;
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function escHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str || '';
+    return d.innerHTML;
+  }
+</script>
+</body>
+</html>
