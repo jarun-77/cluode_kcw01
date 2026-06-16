@@ -270,7 +270,7 @@
   .inv-card{background:#fff;border-radius:var(--radius);box-shadow:0 4px 18px rgba(26,82,118,.08);overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column}
   .inv-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(26,82,118,.16)}
   .inv-top{height:90px;background:linear-gradient(135deg,var(--secondary),var(--primary));display:flex;align-items:center;justify-content:center;color:#fff;font-size:32px;position:relative}
-  .inv-type{position:absolute;top:10px;left:10px;background:rgba(255,255,255,.22);backdrop-filter:blur(4px);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+  .inv-type{position:absolute;top:10px;left:10px;background:rgba(255,255,255,.92);color:#E67E22;backdrop-filter:blur(4px);padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.12)}
   .inv-body{padding:16px;flex:1;display:flex;flex-direction:column}
   .inv-title{font-family:var(--font-heading);font-size:1rem;color:var(--primary);margin-bottom:8px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .inv-meta{font-size:12px;color:var(--dark-gray);margin-top:auto;display:flex;flex-wrap:wrap;gap:10px;padding-top:10px}
@@ -574,6 +574,17 @@ var typeColors=['#1A5276','#2E86C1','#148F77','#F39C12','#8E44AD','#85929E'];
 var chartFont={family:'Sarabun',size:13};
 var chartDefaults={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:chartFont}},tooltip:{titleFont:chartFont,bodyFont:chartFont}}};
 function thaiYears(){var y=new Date().getFullYear()+543;var a=[];for(var i=0;i<=5;i++)a.push(y-i);return a;}
+function yearsList(){
+  var c=state.publicConfig||{};
+  if(c.academic_years){var arr=String(c.academic_years).split(',').map(function(x){return x.trim();}).filter(function(x){return x;});if(arr.length)return arr;}
+  return thaiYears();
+}
+function populateYears(){
+  var ys=yearsList();
+  var up=document.getElementById('up_year');if(up)up.innerHTML=ys.map(function(y){return '<option value="'+esc(y)+'">'+esc(y)+'</option>';}).join('');
+  var rp=document.getElementById('reportYear');if(rp)rp.innerHTML=ys.map(function(y){return '<option value="'+esc(y)+'">ปีการศึกษา '+esc(y)+'</option>';}).join('');
+  var br=document.getElementById('browseYear');if(br)br.innerHTML='<option value="">ทุกปีการศึกษา</option>'+ys.map(function(y){return '<option value="'+esc(y)+'">ปี '+esc(y)+'</option>';}).join('');
+}
 
 // เมนูตามบทบาท (แบ่งเป็น section) — ทุกบทบาทเพิ่ม/ดูนวัตกรรมของตัวเองได้
 var MI={
@@ -637,7 +648,7 @@ window.addEventListener('DOMContentLoaded',function(){
   document.getElementById('confirmNo').onclick=function(){closeModal('confirmModal');if(_confirmResolve){_confirmResolve(false);_confirmResolve=null;}};
 
   // โหลดค่า config สาธารณะ (ชื่อโรงเรียน + footer) สำหรับการพิมพ์
-  callAPI('getPublicConfig').then(function(res){ if(res&&res.success){ state.publicConfig=res.data; renderFooter(); applyBranding(); } });
+  callAPI('getPublicConfig').then(function(res){ if(res&&res.success){ state.publicConfig=res.data; renderFooter(); applyBranding(); populateYears(); } });
   renderFooter();
 
   var saved=sessionStorage.getItem('KIMS_TOKEN');
@@ -945,6 +956,7 @@ function loadConfig(){
     var fields=[
       {k:'school_name',l:'ชื่อโรงเรียน',t:'text'},
       {k:'school_logo_url',l:'โลโก้โรงเรียน',d:'อัปโหลดรูปโลโก้ (แสดงบนหัวเว็บ)',t:'image'},
+      {k:'academic_years',l:'ปีการศึกษาที่เปิดใช้',d:'คั่นด้วยจุลภาค เช่น 2569,2568,2567 (ใหม่สุดอยู่หน้า)',t:'text'},
       {k:'admin_email',l:'อีเมลผู้ดูแลระบบ',t:'email'},
       {k:'max_file_size_mb',l:'ขนาดไฟล์สูงสุด',d:'หน่วยเป็น MB',t:'number'},
       {k:'primary_color',l:'สีหลักของระบบ',t:'color'},
@@ -1270,7 +1282,7 @@ function handleCoverImage(ev){
 function clearCover(){pendingCoverUrl='';document.getElementById('up_coverPreview').innerHTML='';document.getElementById('up_coverFile').value='';}
 
 // ════════ FOOTER ════════
-var APP_VERSION='1.2';
+var APP_VERSION='1.3';
 function renderFooter(){
   var c=state.publicConfig||{};
   var lines=[c.footer_line1,c.footer_line2,c.footer_line3].filter(function(x){return x;});

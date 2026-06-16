@@ -304,6 +304,7 @@ const DashboardService = {
       return successResponse({
         school_name:     c.school_name || 'โรงเรียนกระแชงวิทยา',
         school_logo_url: c.school_logo_url || '',
+        academic_years:  c.academic_years || '',
         footer_line1:    c.footer_line1 || '',
         footer_line2:    c.footer_line2 || '',
         footer_line3:    c.footer_line3 || '',
@@ -326,13 +327,19 @@ const DashboardService = {
       const keyCol = headers.indexOf('config_key');
       const valCol = headers.indexOf('config_value');
 
+      // สร้าง map: config_key → แถว (เพื่อ upsert)
+      const rowOf = {};
+      for (let i = 1; i < sheetData.length; i++) { rowOf[String(sheetData[i][keyCol])] = i; }
+
       Object.entries(data).forEach(([key, value]) => {
-        if (key === 'action') return;
-        for (let i = 1; i < sheetData.length; i++) {
-          if (sheetData[i][keyCol] === key) {
-            sheet.getRange(i + 1, valCol + 1).setValue(value);
-            break;
-          }
+        if (key === 'action' || key === 'token') return;
+        if (rowOf[key] !== undefined) {
+          // อัปเดต key เดิม
+          sheet.getRange(rowOf[key] + 1, valCol + 1).setValue(value);
+        } else {
+          // เพิ่ม key ใหม่ลงชีต
+          const newRow = headers.map(h => h === 'config_key' ? key : (h === 'config_value' ? value : ''));
+          sheet.appendRow(newRow);
         }
       });
 
