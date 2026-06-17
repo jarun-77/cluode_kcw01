@@ -87,6 +87,7 @@ function handleRequest(data) {
     'updateUser':           () => UserService.updateUser(data),
     'toggleUserActive':     () => UserService.toggleUserActive(data),
     'bulkImportUsers':      () => UserService.bulkImportUsers(data),
+    'deleteUser':           () => UserService.deleteUser(data),
 
     // ─── Super Admin ──────────────────────────────
     'getConfig':            () => DashboardService.getConfig(data),

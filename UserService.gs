@@ -286,6 +286,29 @@ const UserService = {
     return session;
   },
 
+  /** ลบผู้ใช้ถาวร (ADMIN+) — ลบ SuperAdmin/ตัวเองไม่ได้ */
+  deleteUser: function(data) {
+    try {
+      const session = requireRole(data, [ROLES.SUPERADMIN, ROLES.ADMIN]);
+      const userId = data.user_id;
+      if (!userId) return errorResponse('ไม่ระบุ user_id');
+      if (userId === session.user_id) return errorResponse('ไม่สามารถลบบัญชีของตนเองได้');
+
+      const user = getAllRows(SHEET_NAMES.USERS).find(r => r.user_id === userId);
+      if (!user) return errorResponse('ไม่พบผู้ใช้ที่ระบุ');
+      if (user.role === ROLES.SUPERADMIN) return errorResponse('ไม่สามารถลบผู้ดูแลระบบสูงสุดได้');
+      if (session.role === ROLES.ADMIN && [ROLES.SUPERADMIN, ROLES.ADMIN].includes(user.role)) {
+        return errorResponse('คุณไม่มีสิทธิ์ลบผู้ใช้ระดับนี้');
+      }
+
+      deleteRowByKey(SHEET_NAMES.USERS, 'user_id', userId);
+      writeAuditLog(session.user_id, AUDIT_ACTIONS.DELETE, 'USER', userId, { name: user.first_name + ' ' + user.last_name });
+      return successResponse(null, 'ลบผู้ใช้เรียบร้อยแล้ว');
+    } catch (e) {
+      return errorResponse(e.message);
+    }
+  },
+
   /** Format user สำหรับ Frontend (ไม่ส่ง password_hash) */
   formatUser: function(user) {
     return {

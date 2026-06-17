@@ -8,14 +8,17 @@ const DashboardService = {
   /** ดึงข้อมูล Dashboard ทั้งหมด (Admin) */
   getDashboardData: function(params) {
     try {
-      const session = requireRole(params, [ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.HEAD]);
+      // รองรับทั้งผู้ใช้ที่ล็อกอิน และบุคคลทั่วไป (ไม่มี session → ดูเฉพาะที่เผยแพร่)
+      const session = AuthService.getSessionByToken(params && params.token ? params.token : '');
+      const isPublic = !session;
       const innovations = getAllRows(SHEET_NAMES.INNOVATIONS);
       const users = getAllRows(SHEET_NAMES.USERS);
 
-      // HEAD ดูเฉพาะกลุ่มสาระตนเอง
-      const filtered = session.role === ROLES.HEAD
+      // HEAD ดูเฉพาะกลุ่มสาระตนเอง / บุคคลทั่วไปดูเฉพาะที่เผยแพร่
+      let filtered = (session && session.role === ROLES.HEAD)
         ? innovations.filter(r => r.department === session.department)
         : innovations;
+      if (isPublic) filtered = filtered.filter(r => r.status === STATUS.PUBLISHED);
 
       // ─── KPI Cards ────────────────────────────
       const kpi = {
@@ -24,7 +27,7 @@ const DashboardService = {
         published: filtered.filter(r => r.status === STATUS.PUBLISHED).length,
         rejected: filtered.filter(r => r.status === STATUS.REJECTED).length,
         draft: filtered.filter(r => r.status === STATUS.DRAFT).length,
-        total_teachers: session.role === ROLES.HEAD
+        total_teachers: (session && session.role === ROLES.HEAD)
           ? users.filter(u => u.department === session.department && u.role === ROLES.TEACHER).length
           : users.filter(u => [ROLES.TEACHER, ROLES.HEAD].includes(u.role)).length,
         active_teachers: [...new Set(filtered.filter(r => r.status === STATUS.PUBLISHED).map(r => r.teacher_id))].length,

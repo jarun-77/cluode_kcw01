@@ -58,6 +58,13 @@ const EmailService = {
     try {
       const admins = getAllRows(SHEET_NAMES.USERS)
         .filter(u => [ROLES.SUPERADMIN, ROLES.ADMIN].includes(u.role) && String(u.is_active) === 'TRUE');
+      // อีเมลผู้รับ = admin ทุกคน + admin_email จาก CONFIG (กันกรณี admin ไม่ได้กรอกอีเมล)
+      const recipients = {};
+      admins.forEach(a => { if (a.email) recipients[String(a.email).trim().toLowerCase()] = a.email; });
+      try {
+        const cfg = getAllRows(SHEET_NAMES.CONFIG).find(r => r.config_key === 'admin_email');
+        if (cfg && cfg.config_value) recipients[String(cfg.config_value).trim().toLowerCase()] = cfg.config_value;
+      } catch (_e) {}
 
       const body = `
         <h3 style="color:#1A5276;">🔔 มีนวัตกรรมใหม่รอการอนุมัติ</h3>
@@ -77,8 +84,8 @@ const EmailService = {
         <p style="color:#888;font-size:13px;">กรุณาเข้าสู่ระบบ KIMS เพื่อตรวจสอบและอนุมัตินวัตกรรมดังกล่าว</p>
       `;
 
-      admins.forEach(admin => {
-        this._send(admin.email, `[KIMS] มีนวัตกรรมใหม่รออนุมัติ: ${innovation.title}`, body);
+      Object.values(recipients).forEach(email => {
+        this._send(email, `[KIMS] มีนวัตกรรมใหม่รออนุมัติ: ${innovation.title}`, body);
       });
     } catch (e) {
       Logger.log('notifyAdminNewInnovation error: ' + e.message);

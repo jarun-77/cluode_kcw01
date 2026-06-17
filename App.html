@@ -209,6 +209,11 @@
   .sidebar-logo .icon{overflow:hidden}
   .public-brand .nm{font-family:var(--font-heading);font-weight:700;color:var(--primary);font-size:17px;line-height:1.2}
   .public-brand .sub{font-size:12px;color:var(--dark-gray)}
+  .public-nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .pub-link{background:none;border:none;font-family:var(--font-main);font-size:14px;font-weight:600;color:var(--dark-gray);cursor:pointer;padding:8px 12px;border-radius:8px;display:flex;align-items:center;gap:6px}
+  .pub-link:hover{background:var(--light-blue);color:var(--primary)}
+  .pub-link.active{background:var(--primary);color:#fff}
+  @media(max-width:600px){.public-bar{flex-direction:column;align-items:stretch;gap:10px}.public-nav{justify-content:center}}
 
   /* ════ INNOVATION CARDS (enhanced) ════ */
   .inv-teacher{display:flex;align-items:center;gap:8px;font-size:13px;color:#444;margin:10px 0 4px}
@@ -326,7 +331,11 @@
   <main class="main">
     <div class="public-bar" id="publicBar">
       <div class="public-brand"><div class="logo"><i class="fas fa-lightbulb"></i></div><div><div class="nm">KIMS · โรงเรียนกระแชงวิทยา</div><div class="sub">คลังนวัตกรรมทางการศึกษา</div></div></div>
-      <button class="btn btn-primary btn-sm" onclick="showLogin()"><i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ</button>
+      <div class="public-nav">
+        <button class="pub-link active" data-pubview="browse" onclick="showView('browse')"><i class="fas fa-compass"></i> คลังนวัตกรรม</button>
+        <button class="pub-link" data-pubview="dashboard" onclick="showView('dashboard')"><i class="fas fa-chart-pie"></i> สถิติภาพรวม</button>
+        <button class="btn btn-primary btn-sm" onclick="showLogin()"><i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ</button>
+      </div>
     </div>
     <div class="mobile-bar" id="mobileBar"><button class="ham" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button><span class="ttl">KIMS · กระแชงวิทยา</span></div>
 
@@ -395,25 +404,68 @@
 
     <!-- REPORTS -->
     <section id="view-reports" class="hidden">
-      <div class="top-bar"><div class="page-title"><i class="fas fa-file-alt"></i> รายงาน</div><div class="top-bar-right"><select id="reportYear" onchange="loadReports()" style="border:2px solid #e0e0e0;border-radius:8px;padding:7px 12px;font-family:var(--font-main)"></select><button class="btn btn-accent btn-sm" onclick="exportReportExcel()"><i class="fas fa-file-excel"></i> Export Excel</button><button class="btn btn-primary btn-sm" onclick="printView('รายงานสรุปนวัตกรรม')"><i class="fas fa-file-pdf"></i> พิมพ์ / PDF</button></div></div>
-      <div class="kpi-grid">
-        <div class="kpi-card total"><div class="kpi-icon"><i class="fas fa-layer-group"></i></div><div><div class="kpi-num" id="rpTotal">—</div><div class="kpi-label">นวัตกรรมที่เผยแพร่</div></div></div>
-        <div class="kpi-card teachers"><div class="kpi-icon"><i class="fas fa-users"></i></div><div><div class="kpi-num" id="rpTeachers">—</div><div class="kpi-label">ครูที่มีผลงาน</div></div></div>
+      <div class="top-bar"><div class="page-title"><i class="fas fa-file-alt"></i> รายงาน</div><div class="top-bar-right"><select id="reportYear" onchange="loadReports()" style="border:2px solid #e0e0e0;border-radius:8px;padding:7px 12px;font-family:var(--font-main)"></select><button class="btn btn-primary btn-sm" onclick="printView(currentReportName())"><i class="fas fa-file-pdf"></i> พิมพ์ / PDF</button></div></div>
+      <div class="tab-bar" style="flex-wrap:wrap">
+        <button class="tab-btn active" data-rtab="year" onclick="reportTab('year')"><i class="fas fa-calendar"></i> รายปีการศึกษา</button>
+        <button class="tab-btn" data-rtab="teacher" onclick="reportTab('teacher')"><i class="fas fa-user-graduate"></i> รายบุคคล (ครู)</button>
+        <button class="tab-btn" data-rtab="dept" onclick="reportTab('dept')"><i class="fas fa-layer-group"></i> รายกลุ่มสาระ</button>
+        <button class="tab-btn" data-rtab="popular" onclick="reportTab('popular')"><i class="fas fa-fire"></i> ยอดนิยม</button>
+        <button class="tab-btn" data-rtab="approval" onclick="reportTab('approval')"><i class="fas fa-clipboard-check"></i> การอนุมัติ</button>
+        <button class="tab-btn" id="rtabAuditBtn" data-rtab="audit" onclick="reportTab('audit')" style="display:none"><i class="fas fa-history"></i> การใช้งานระบบ</button>
+        <button class="tab-btn" data-rtab="export" onclick="reportTab('export')"><i class="fas fa-file-excel"></i> ส่งออก สพฐ.</button>
       </div>
-      <div class="charts-row">
-        <div class="card"><div class="card-title"><i class="fas fa-chart-pie"></i> ตามประเภท</div><div class="chart-wrap"><canvas id="rpTypeChart"></canvas></div></div>
-        <div class="card"><div class="card-title"><i class="fas fa-chart-bar"></i> ตามกลุ่มสาระ</div><div class="chart-wrap"><canvas id="rpDeptChart"></canvas></div></div>
-      </div>
-      <div class="card"><div class="card-title"><i class="fas fa-user-graduate"></i> สรุปรายครู</div><div style="overflow-x:auto"><table class="data-table" id="rpTeacherTable"><thead><tr><th>#</th><th>ครู</th><th>กลุ่มสาระ</th><th>จำนวนผลงาน</th><th>ยอดเข้าชม</th></tr></thead><tbody><tr><td colspan="5" class="loading">—</td></tr></tbody></table></div></div>
 
-      <div class="card"><div class="card-title"><i class="fas fa-clipboard-check"></i> สรุปการอนุมัติ</div>
+      <!-- รายปีการศึกษา -->
+      <div class="rtab" id="rtab-year">
+        <div class="kpi-grid">
+          <div class="kpi-card total"><div class="kpi-icon"><i class="fas fa-layer-group"></i></div><div><div class="kpi-num" id="rpTotal">—</div><div class="kpi-label">นวัตกรรมที่เผยแพร่</div></div></div>
+          <div class="kpi-card teachers"><div class="kpi-icon"><i class="fas fa-users"></i></div><div><div class="kpi-num" id="rpTeachers">—</div><div class="kpi-label">ครูที่มีผลงาน</div></div></div>
+        </div>
+        <div class="charts-row">
+          <div class="card"><div class="card-title"><i class="fas fa-chart-pie"></i> แยกตามประเภท</div><div class="chart-wrap"><canvas id="rpTypeChart"></canvas></div></div>
+          <div class="card"><div class="card-title"><i class="fas fa-chart-bar"></i> แยกตามกลุ่มสาระ</div><div class="chart-wrap"><canvas id="rpDeptChart"></canvas></div></div>
+        </div>
+        <div class="card"><div class="card-title"><i class="fas fa-chart-column"></i> แยกตามระดับชั้น</div><div class="chart-wrap"><canvas id="rpGradeChart"></canvas></div></div>
+      </div>
+
+      <!-- รายบุคคล (ครู) -->
+      <div class="rtab hidden" id="rtab-teacher">
+        <div class="card"><div class="card-title"><i class="fas fa-user-graduate"></i> สรุปรายครู (ชื่อ/กลุ่มสาระ/จำนวนผลงาน/ยอดชม)</div><div style="overflow-x:auto"><table class="data-table" id="rpTeacherTable"><thead><tr><th>#</th><th>ครู</th><th>กลุ่มสาระ</th><th>จำนวนผลงาน</th><th>ยอดเข้าชม</th></tr></thead><tbody><tr><td colspan="5" class="loading">—</td></tr></tbody></table></div></div>
+      </div>
+
+      <!-- รายกลุ่มสาระ -->
+      <div class="rtab hidden" id="rtab-dept">
+        <div class="card"><div class="card-title"><i class="fas fa-balance-scale"></i> เปรียบเทียบจำนวนนวัตกรรมแต่ละกลุ่มสาระ</div><div class="chart-wrap tall"><canvas id="rpDeptCompare"></canvas></div></div>
+      </div>
+
+      <!-- ยอดนิยม -->
+      <div class="rtab hidden" id="rtab-popular">
+        <div class="card"><div class="card-title"><i class="fas fa-fire" style="color:#E74C3C"></i> นวัตกรรมยอดนิยม Top 10 (ยอดเข้าชม)</div><div style="overflow-x:auto"><table class="data-table" id="rpPopularTable"><thead><tr><th>#</th><th>ชื่อนวัตกรรม</th><th>ครู</th><th>ประเภท</th><th>ยอดชม</th></tr></thead><tbody><tr><td colspan="5" class="loading">—</td></tr></tbody></table></div></div>
+      </div>
+
+      <!-- การอนุมัติ -->
+      <div class="rtab hidden" id="rtab-approval">
         <div class="kpi-grid" style="margin-bottom:18px">
           <div class="kpi-card published"><div class="kpi-icon"><i class="fas fa-check"></i></div><div><div class="kpi-num" id="apApproved">—</div><div class="kpi-label">อนุมัติแล้ว</div></div></div>
           <div class="kpi-card pending"><div class="kpi-icon"><i class="fas fa-times"></i></div><div><div class="kpi-num" id="apRejected">—</div><div class="kpi-label">ถูกปฏิเสธ</div></div></div>
           <div class="kpi-card teachers"><div class="kpi-icon"><i class="fas fa-hourglass-half"></i></div><div><div class="kpi-num" id="apPending">—</div><div class="kpi-label">รออนุมัติ</div></div></div>
           <div class="kpi-card total"><div class="kpi-icon"><i class="fas fa-stopwatch"></i></div><div><div class="kpi-num" id="apAvg">—</div><div class="kpi-label">เวลาอนุมัติเฉลี่ย (วัน)</div></div></div>
         </div>
-        <div class="chart-wrap tall"><canvas id="apChart"></canvas></div>
+        <div class="card"><div class="card-title"><i class="fas fa-chart-bar"></i> อนุมัติ/ปฏิเสธ รายเดือน</div><div class="chart-wrap tall"><canvas id="apChart"></canvas></div></div>
+      </div>
+
+      <!-- การใช้งานระบบ (Super Admin) -->
+      <div class="rtab hidden" id="rtab-audit">
+        <div class="card"><div class="card-title"><i class="fas fa-history"></i> Login / Activity ของผู้ใช้ <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="loadAudit()"><i class="fas fa-sync-alt"></i> รีเฟรช</button></div><div style="overflow-x:auto"><table class="data-table" id="auditTable"><thead><tr><th>เวลา</th><th>ผู้ใช้</th><th>การกระทำ</th><th>ประเภท</th><th>รายละเอียด</th></tr></thead><tbody><tr><td colspan="5" class="loading">—</td></tr></tbody></table></div></div>
+      </div>
+
+      <!-- ส่งออก สพฐ. -->
+      <div class="rtab hidden" id="rtab-export">
+        <div class="card" style="max-width:560px">
+          <div class="card-title"><i class="fas fa-file-excel" style="color:var(--published)"></i> รายงานส่งออกสำหรับ สพฐ.</div>
+          <p style="font-size:14px;color:var(--dark-gray);line-height:1.7;margin-bottom:16px">ดาวน์โหลดข้อมูลสรุปรายครูของปีการศึกษาที่เลือก เป็นไฟล์ Excel (.csv รองรับภาษาไทย) สำหรับจัดทำรายงานส่ง สพฐ.</p>
+          <button class="btn btn-accent" onclick="exportReportExcel()"><i class="fas fa-download"></i> ดาวน์โหลด Excel (รายครู)</button>
+        </div>
       </div>
     </section>
 
@@ -424,12 +476,6 @@
         <div class="alert" id="configAlert"><i class="fas fa-exclamation-circle"></i><span id="configAlertTxt"></span></div>
         <div class="form" id="configForm"><div class="loading"><i class="fas fa-spinner spin"></i> กำลังโหลด...</div></div>
       </div>
-    </section>
-
-    <!-- AUDIT LOG (super admin) -->
-    <section id="view-audit" class="hidden">
-      <div class="top-bar"><div class="page-title"><i class="fas fa-history"></i> รายงานการใช้งานระบบ</div><div class="top-bar-right"><i class="fas fa-sync-alt clk" onclick="loadAudit()"></i><button class="btn btn-primary btn-sm" onclick="printView('รายงานการใช้งานระบบ')"><i class="fas fa-print"></i> พิมพ์</button></div></div>
-      <div class="card"><div style="overflow-x:auto"><table class="data-table" id="auditTable"><thead><tr><th>เวลา</th><th>ผู้ใช้</th><th>การกระทำ</th><th>ประเภท</th><th>รายละเอียด</th></tr></thead><tbody><tr><td colspan="5" class="loading"><i class="fas fa-spinner spin"></i> กำลังโหลด...</td></tr></tbody></table></div></div>
     </section>
 
     <!-- MY INNOVATIONS (teacher) -->
@@ -600,12 +646,12 @@ var MI={
   cfg:{v:'config',i:'fa-cog',t:'ตั้งค่าระบบ'}
 };
 var MENUS={
-  TEACHER:[{label:'นวัตกรรม',items:[MI.browse,MI.my,MI.up]}],
-  HEAD:[{label:'นวัตกรรม',items:[MI.browse,MI.my,MI.up]},{label:'ภาพรวม',items:[MI.dash,MI.mng]}],
+  TEACHER:[{label:'นวัตกรรม',items:[MI.browse,MI.my,MI.up]},{label:'ภาพรวม',items:[MI.dash]}],
+  HEAD:[{label:'นวัตกรรม',items:[MI.browse,MI.my,MI.up]},{label:'ภาพรวม',items:[MI.dash,MI.mng,MI.rep]}],
   ADMIN:[{label:'นวัตกรรม',items:[MI.browse,MI.my,MI.up]},{label:'บริหารระบบ',items:[MI.dash,MI.appr,MI.mng,MI.usr,MI.rep]}],
-  SUPERADMIN:[{label:'นวัตกรรม',items:[MI.browse,MI.my,MI.up]},{label:'บริหารระบบ',items:[MI.dash,MI.appr,MI.mng,MI.usr,MI.rep,MI.audit,MI.cfg]}]
+  SUPERADMIN:[{label:'นวัตกรรม',items:[MI.browse,MI.my,MI.up]},{label:'บริหารระบบ',items:[MI.dash,MI.appr,MI.mng,MI.usr,MI.rep,MI.cfg]}]
 };
-var ALL_VIEWS=['browse','dashboard','approve','manage','users','reports','audit','config','my','upload'];
+var ALL_VIEWS=['browse','dashboard','approve','manage','users','reports','config','my','upload'];
 var ROLE_META={
   SUPERADMIN:{i:'fa-crown',t:'ผู้ดูแลระบบสูงสุด'},
   ADMIN:{i:'fa-user-shield',t:'ผู้ดูแลระบบ'},
@@ -651,6 +697,9 @@ window.addEventListener('DOMContentLoaded',function(){
   callAPI('getPublicConfig').then(function(res){ if(res&&res.success){ state.publicConfig=res.data; renderFooter(); applyBranding(); populateYears(); } });
   renderFooter();
 
+  // โหมดฝังเว็บอื่น (embed) — แสดงเฉพาะคลังนวัตกรรม ไม่มีแถบเข้าสู่ระบบ/footer
+  if(/[?&]embed=1/.test(window.location.search)){ enterEmbed(); return; }
+
   var saved=sessionStorage.getItem('KIMS_TOKEN');
   if(saved){state.token=saved;callAPI('getCurrentUser',{token:saved}).then(function(res){if(res&&res.success){enterApp(res.data);}else{enterPublic();}}).catch(function(){enterPublic();});}
   else{enterPublic();}
@@ -668,6 +717,17 @@ function enterPublic(){
   document.getElementById('publicBar').classList.add('show');
   showView('browse');
 }
+function enterEmbed(){
+  state.user=null;state.token='';
+  document.getElementById('loginView').classList.add('hidden');
+  document.getElementById('appShell').classList.remove('hidden');
+  document.querySelector('.sidebar').classList.add('hidden');
+  document.getElementById('mobileBar').classList.remove('on');
+  document.getElementById('publicBar').classList.remove('show');
+  var fb=document.getElementById('appFooter');if(fb)fb.style.display='none';
+  var main=document.querySelector('.main');main.style.marginLeft='0';main.style.width='100%';main.style.padding='16px';
+  showView('browse');
+}
 
 // ════════ LOGIN ════════
 function togglePw(){var pw=document.getElementById('pw'),ic=document.getElementById('eyeIcon');if(pw.type==='password'){pw.type='text';ic.className='fas fa-eye-slash';}else{pw.type='password';ic.className='fas fa-eye';}}
@@ -683,7 +743,7 @@ function doLogin(){
     if(res&&res.success){
       state.token=res.data.token;sessionStorage.setItem('KIMS_TOKEN',res.data.token);
       loginAlert('success','เข้าสู่ระบบสำเร็จ');
-      callAPI('getCurrentUser',{token:state.token}).then(function(r2){enterApp(r2&&r2.success?r2.data:{full_name:res.data.full_name,role:res.data.role,department:res.data.department});});
+      enterApp(res.data);
     }else{loginAlert('error',(res&&res.error)||'เข้าสู่ระบบไม่สำเร็จ');document.getElementById('pw').value='';}
   }).catch(function(){loginLoading(false);loginAlert('error','เกิดข้อผิดพลาดในการเชื่อมต่อ');});
 }
@@ -716,13 +776,13 @@ function showView(name){
   closeSidebar();
   ALL_VIEWS.forEach(function(v){var el=document.getElementById('view-'+v);if(el)el.classList.toggle('hidden',v!==name);});
   document.querySelectorAll('.nav-item').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-view')===name);});
+  document.querySelectorAll('.pub-link[data-pubview]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-pubview')===name);});
   if(name==='dashboard')loadDashboard();
   else if(name==='browse')loadBrowse();
   else if(name==='approve')loadApprove();
   else if(name==='manage')loadManage();
   else if(name==='users')loadUsers();
   else if(name==='reports')loadReports();
-  else if(name==='audit')loadAudit();
   else if(name==='config')loadConfig();
   else if(name==='my')loadMy();
   else if(name==='upload'){if(!document.getElementById('up_id').value)resetUpload();}
@@ -814,8 +874,9 @@ function loadUsers(){
     tb.innerHTML=state.users.map(function(u){
       return '<tr><td>'+esc(u.full_name)+'</td><td>'+esc(u.role_label)+'</td><td>'+esc(u.department||'-')+'</td><td>'+esc(u.email||'-')+'</td>'+
         '<td><span class="badge '+(u.is_active?'PUBLISHED':'REJECTED')+'">'+(u.is_active?'ใช้งาน':'ระงับ')+'</span></td>'+
-        '<td style="white-space:nowrap"><button class="btn btn-ghost btn-sm" onclick="editUser(\''+u.user_id+'\')"><i class="fas fa-edit"></i></button> '+
-        '<button class="btn btn-ghost btn-sm" onclick="toggleUser(\''+u.user_id+'\','+(u.is_active?'false':'true')+')"><i class="fas fa-'+(u.is_active?'ban':'check')+'"></i></button></td></tr>';
+        '<td style="white-space:nowrap"><button class="btn btn-ghost btn-sm" title="แก้ไข" onclick="editUser(\''+u.user_id+'\')"><i class="fas fa-edit"></i></button> '+
+        '<button class="btn btn-ghost btn-sm" title="'+(u.is_active?'ระงับ':'เปิดใช้งาน')+'" onclick="toggleUser(\''+u.user_id+'\','+(u.is_active?'false':'true')+')"><i class="fas fa-'+(u.is_active?'ban':'check')+'"></i></button> '+
+        '<button class="btn btn-ghost btn-sm" title="ลบ" style="color:var(--rejected)" onclick="deleteUser(\''+u.user_id+'\')"><i class="fas fa-trash"></i></button></td></tr>';
     }).join('');
   }).catch(function(){tb.innerHTML='<tr><td colspan="6" class="empty">เกิดข้อผิดพลาด</td></tr>';});
 }
@@ -850,6 +911,7 @@ function saveUser(){
   callAPI(action,payload).then(function(res){btn.disabled=false;if(res&&res.success){closeModal('userModal');loadUsers();}else{userAlert((res&&res.error)||'บันทึกไม่สำเร็จ');}}).catch(function(){btn.disabled=false;userAlert('เกิดข้อผิดพลาด');});
 }
 function toggleUser(id,active){showConfirm(active?'เปิดการใช้งานบัญชีนี้?':'ระงับการใช้งานบัญชีนี้?',{title:'เปลี่ยนสถานะบัญชี',danger:!active,yesText:active?'เปิดใช้งาน':'ระงับ'}).then(function(ok){if(!ok)return;callAPI('toggleUserActive',{user_id:id,is_active:active}).then(function(res){if(res&&res.success){showToast(res.message||'ดำเนินการเรียบร้อย','success');loadUsers();}else{showToast((res&&res.error)||'ไม่สำเร็จ','error');}}).catch(function(){showToast('เกิดข้อผิดพลาด','error');});});}
+function deleteUser(id){var u=(state.users||[]).filter(function(x){return x.user_id===id;})[0];var nm=u?u.full_name:'';showConfirm('ลบผู้ใช้ "'+nm+'" ถาวร? การลบไม่สามารถย้อนกลับได้',{title:'ลบผู้ใช้',danger:true,yesText:'ลบถาวร'}).then(function(ok){if(!ok)return;callAPI('deleteUser',{user_id:id}).then(function(res){if(res&&res.success){showToast(res.message||'ลบเรียบร้อยแล้ว','success');loadUsers();}else{showToast((res&&res.error)||'ลบไม่สำเร็จ','error');}}).catch(function(){showToast('เกิดข้อผิดพลาด','error');});});}
 
 // ════════ CSV IMPORT ════════
 function csvAlert(m){var el=document.getElementById('csvAlert');if(m){el.className='alert error';document.getElementById('csvAlertTxt').textContent=m;}else{el.className='alert';}}
@@ -891,13 +953,39 @@ function downloadCsvTemplate(){
 }
 
 // ════════ REPORTS ════════
+var REPORT_NAMES={year:'สรุปนวัตกรรมรายปีการศึกษา',teacher:'สรุปรายบุคคล (ครู)',dept:'สรุปรายกลุ่มสาระ',popular:'นวัตกรรมยอดนิยม',approval:'สรุปการอนุมัติ',audit:'รายงานการใช้งานระบบ',export:'รายงานส่งออก สพฐ.'};
+var currentRtab='year';
+function currentReportName(){return REPORT_NAMES[currentRtab]||'รายงาน';}
+function reportTab(tab){
+  currentRtab=tab;
+  ['year','teacher','dept','popular','approval','audit','export'].forEach(function(t){var el=document.getElementById('rtab-'+t);if(el)el.classList.toggle('hidden',t!==tab);});
+  document.querySelectorAll('#view-reports .tab-btn[data-rtab]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-rtab')===tab);});
+  if(tab==='popular')loadPopular();
+  else if(tab==='audit')loadAudit();
+}
+function loadPopular(){
+  var tb=document.querySelector('#rpPopularTable tbody');tb.innerHTML='<tr><td colspan="5" class="loading"><i class="fas fa-spinner spin"></i> กำลังโหลด...</td></tr>';
+  callAPI('getDashboardData').then(function(res){
+    if(!res||!res.success){tb.innerHTML='<tr><td colspan="5" class="empty">โหลดไม่สำเร็จ</td></tr>';return;}
+    var list=(res.data&&res.data.topViewed)||[];
+    if(!list.length){tb.innerHTML='<tr><td colspan="5" class="empty">ยังไม่มีข้อมูล</td></tr>';return;}
+    tb.innerHTML=list.map(function(r,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(r.title)+'</td><td>'+esc(r.teacher_name)+'</td><td>'+esc(r.type_name||'-')+'</td><td>'+(r.view_count||0)+'</td></tr>';}).join('');
+  }).catch(function(){tb.innerHTML='<tr><td colspan="5" class="empty">เกิดข้อผิดพลาด</td></tr>';});
+}
 function loadReports(){
+  // แสดงแท็บ "การใช้งานระบบ" เฉพาะ Super Admin
+  var auditBtn=document.getElementById('rtabAuditBtn');if(auditBtn)auditBtn.style.display=(state.user&&state.user.role==='SUPERADMIN')?'':'none';
+  reportTab('year');
   var year=document.getElementById('reportYear').value;
   callAPI('getYearlyReport',{academic_year:year}).then(function(res){
     if(!res||!res.success)return;var d=res.data;
     document.getElementById('rpTotal').textContent=(d.total||0).toLocaleString();
     renderChart('rpType','doughnut',d.byType.map(function(t){return t.name;}),d.byType.map(function(t){return t.count;}),{cutout:'60%',plugins:{legend:{position:'bottom',labels:{font:chartFont,padding:8,boxWidth:12}}}},typeColors,'rpTypeChart');
     renderChart('rpDept','bar',d.byDept.map(function(x){return x.dept;}),d.byDept.map(function(x){return x.count;}),{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0}}}},'#148F77','rpDeptChart');
+    var bg=(d.byGrade||[]);
+    renderChart('rpGrade','bar',bg.map(function(g){return g.grade;}),bg.map(function(g){return g.count;}),{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}},'#2E86C1','rpGradeChart');
+    // รายกลุ่มสาระ (เปรียบเทียบ)
+    renderChart('rpDeptCmp','bar',d.byDept.map(function(x){return x.dept;}),d.byDept.map(function(x){return x.count;}),{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0}}}},'#8E44AD','rpDeptCompare');
   });
   callAPI('getTeacherReport',{}).then(function(res){
     var tb=document.querySelector('#rpTeacherTable tbody');
@@ -1282,7 +1370,7 @@ function handleCoverImage(ev){
 function clearCover(){pendingCoverUrl='';document.getElementById('up_coverPreview').innerHTML='';document.getElementById('up_coverFile').value='';}
 
 // ════════ FOOTER ════════
-var APP_VERSION='1.3';
+var APP_VERSION='1.4';
 function renderFooter(){
   var c=state.publicConfig||{};
   var lines=[c.footer_line1,c.footer_line2,c.footer_line3].filter(function(x){return x;});

@@ -54,11 +54,17 @@ const AuthService = {
       writeAuditLog(user.user_id, AUDIT_ACTIONS.LOGIN, 'USER', user.user_id, { id_card: idCard });
 
       return successResponse({
-        token:      token,
-        user_id:    user.user_id,
-        full_name:  (user.title || '') + user.first_name + ' ' + user.last_name,
-        role:       user.role,
-        department: user.department,
+        token:       token,
+        user_id:     user.user_id,
+        full_name:   (user.title || '') + user.first_name + ' ' + user.last_name,
+        title:       user.title || '',
+        first_name:  user.first_name || '',
+        last_name:   user.last_name || '',
+        role:        user.role,
+        department:  user.department,
+        email:       user.email || '',
+        phone:       user.phone || '',
+        profile_url: user.profile_url || '',
       }, 'เข้าสู่ระบบสำเร็จ');
 
     } catch (e) {
