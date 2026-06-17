@@ -283,10 +283,11 @@
   /* ════ PRINT / PDF ════ */
   .print-only{display:none}
   @media print{
-    .sidebar,.top-bar-right,.btn,.nav-item,#loginView,#toastBox,.modal-overlay{display:none!important}
+    .sidebar,.top-bar-right,.btn,.nav-item,#loginView,#toastBox,.modal-overlay,.mobile-bar,.public-bar,.tab-bar,#appFooter,.filter-bar,.rtab.hidden{display:none!important}
     .main{margin:0!important;width:100%!important;padding:0!important}
     body{background:#fff!important}
     .card,.kpi-card{box-shadow:none!important;border:1px solid #ddd!important;break-inside:avoid}
+    .data-table th{background:#f0f4f8!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
     .print-only{display:block!important}
     #globalPrintHeader{text-align:center;margin-bottom:20px;border-bottom:2px solid #1A5276;padding-bottom:12px}
     #globalPrintHeader h1{font-family:var(--font-heading);color:#1A5276;font-size:20px}
@@ -646,7 +647,7 @@ var MI={
   cfg:{v:'config',i:'fa-cog',t:'ตั้งค่าระบบ'}
 };
 var MENUS={
-  TEACHER:[{label:'นวัตกรรม',items:[MI.browse,MI.my,MI.up]},{label:'ภาพรวม',items:[MI.dash]}],
+  TEACHER:[{label:'นวัตกรรม',items:[MI.browse,MI.my,MI.up]},{label:'ภาพรวม',items:[MI.dash,MI.rep]}],
   HEAD:[{label:'นวัตกรรม',items:[MI.browse,MI.my,MI.up]},{label:'ภาพรวม',items:[MI.dash,MI.mng,MI.rep]}],
   ADMIN:[{label:'นวัตกรรม',items:[MI.browse,MI.my,MI.up]},{label:'บริหารระบบ',items:[MI.dash,MI.appr,MI.mng,MI.usr,MI.rep]}],
   SUPERADMIN:[{label:'นวัตกรรม',items:[MI.browse,MI.my,MI.up]},{label:'บริหารระบบ',items:[MI.dash,MI.appr,MI.mng,MI.usr,MI.rep,MI.cfg]}]
@@ -974,7 +975,7 @@ function loadPopular(){
 }
 function loadReports(){
   // แสดงแท็บ "การใช้งานระบบ" เฉพาะ Super Admin
-  var auditBtn=document.getElementById('rtabAuditBtn');if(auditBtn)auditBtn.style.display=(state.user&&state.user.role==='SUPERADMIN')?'':'none';
+  var auditBtn=document.getElementById('rtabAuditBtn');if(auditBtn)auditBtn.style.display=(state.user&&['SUPERADMIN','ADMIN'].includes(state.user.role))?'':'none';
   reportTab('year');
   var year=document.getElementById('reportYear').value;
   callAPI('getYearlyReport',{academic_year:year}).then(function(res){
@@ -1008,15 +1009,19 @@ function loadReports(){
 }
 // Export รายงานรายครูเป็น CSV (เปิดใน Excel ได้) — สำหรับ สพฐ.
 function exportReportExcel(){
-  var list=state.reportTeachers||[];
-  if(!list.length){showToast('ไม่มีข้อมูลให้ส่งออก','error');return;}
   var year=document.getElementById('reportYear').value;
-  var header=['ลำดับ','ชื่อครู','กลุ่มสาระ','จำนวนผลงาน','ยอดเข้าชม'];
-  var rows=list.map(function(t,i){return [i+1,t.full_name,t.department||'',t.total,t.total_views||0];});
-  var csv=[header].concat(rows).map(function(r){return r.map(function(c){var s=String(c==null?'':c);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}).join(',');}).join('\n');
-  var blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
-  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='KIMS_รายงานรายครู_'+year+'.csv';a.click();
-  showToast('ส่งออกไฟล์ Excel เรียบร้อยแล้ว','success');
+  showToast('กำลังเตรียมไฟล์...','info');
+  callAPI('getInnovations',{academic_year:year,limit:1000}).then(function(res){
+    if(!res||!res.success){showToast((res&&res.error)||'ส่งออกไม่สำเร็จ','error');return;}
+    var list=(res.data&&res.data.innovations)||[];
+    if(!list.length){showToast('ไม่มีข้อมูลนวัตกรรมให้ส่งออก','error');return;}
+    var header=['ลำดับ','ชื่อนวัตกรรม','เจ้าของผลงาน','ประเภท','กลุ่มสาระ','ปีการศึกษา','ยอดเข้าชม'];
+    var rows=list.map(function(r,i){return [i+1,r.title,r.teacher_name,r.type_name,r.department||'',r.academic_year||'',r.view_count||0];});
+    var csv=[header].concat(rows).map(function(r){return r.map(function(c){var s=String(c==null?'':c);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}).join(',');}).join('\n');
+    var blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='KIMS_รายงานนวัตกรรม_'+(year||'ทั้งหมด')+'.csv';a.click();
+    showToast('ส่งออก '+list.length+' รายการเรียบร้อยแล้ว','success');
+  }).catch(function(){showToast('เกิดข้อผิดพลาดในการส่งออก','error');});
 }
 
 // ════════ AUDIT LOG ════════
@@ -1029,7 +1034,7 @@ function loadAudit(){
     if(!logs.length){tb.innerHTML='<tr><td colspan="5" class="empty">ยังไม่มีบันทึก</td></tr>';return;}
     tb.innerHTML=logs.map(function(l){
       var detail='';try{var o=JSON.parse(l.detail);detail=Object.keys(o).map(function(k){return o[k];}).join(' ');}catch(e){detail=l.detail||'';}
-      return '<tr><td style="white-space:nowrap;font-size:13px">'+esc(l.timestamp)+'</td><td style="font-size:13px">'+esc(l.user_id)+'</td><td><span class="badge DRAFT">'+esc(AUDIT_LABELS[l.action]||l.action)+'</span></td><td style="font-size:13px">'+esc(l.target_type||'-')+'</td><td style="font-size:12px;color:var(--dark-gray)">'+esc(detail)+'</td></tr>';
+      return '<tr><td style="white-space:nowrap;font-size:13px">'+esc(l.timestamp)+'</td><td style="font-size:13px">'+esc(l.user_name||l.user_id)+'</td><td><span class="badge DRAFT">'+esc(AUDIT_LABELS[l.action]||l.action)+'</span></td><td style="font-size:13px">'+esc(l.target_type||'-')+'</td><td style="font-size:12px;color:var(--dark-gray)">'+esc(detail)+'</td></tr>';
     }).join('');
   }).catch(function(){tb.innerHTML='<tr><td colspan="5" class="empty">เกิดข้อผิดพลาด</td></tr>';});
 }
@@ -1222,7 +1227,10 @@ function showConfirm(msg,opts){
 function printView(menuName){
   var c=state.publicConfig||{};
   document.getElementById('printMenuName').textContent=menuName||'รายงาน';
-  document.getElementById('printMeta').textContent='พิมพ์เมื่อ '+new Date().toLocaleString('th-TH')+' โดย '+((state.user&&state.user.full_name)||'ผู้เยี่ยมชม');
+  var ctx='';
+  var ry=document.getElementById('reportYear');
+  if(ry&&!document.getElementById('view-reports').classList.contains('hidden')&&ry.value){ctx='ปีการศึกษา '+ry.value+' · ';}
+  document.getElementById('printMeta').textContent=ctx+'พิมพ์เมื่อ '+new Date().toLocaleString('th-TH')+' โดย '+((state.user&&state.user.full_name)||'ผู้เยี่ยมชม');
   var lines=[c.footer_line1,c.footer_line2,c.footer_line3].filter(function(x){return x;});
   document.getElementById('globalPrintFooter').innerHTML=lines.map(function(l){return '<div>'+esc(l)+'</div>';}).join('');
   setTimeout(function(){window.print();},150);
@@ -1370,7 +1378,7 @@ function handleCoverImage(ev){
 function clearCover(){pendingCoverUrl='';document.getElementById('up_coverPreview').innerHTML='';document.getElementById('up_coverFile').value='';}
 
 // ════════ FOOTER ════════
-var APP_VERSION='1.4';
+var APP_VERSION='1.5';
 function renderFooter(){
   var c=state.publicConfig||{};
   var lines=[c.footer_line1,c.footer_line2,c.footer_line3].filter(function(x){return x;});

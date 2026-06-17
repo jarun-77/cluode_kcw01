@@ -141,7 +141,7 @@ const DashboardService = {
   /** รายงาน: สรุปรายปีการศึกษา */
   getYearlyReport: function(params) {
     try {
-      requireRole(params, [ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.HEAD]);
+      requireRole(params, [ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.HEAD, ROLES.TEACHER]);
       const year = params.academic_year;
       const rows = getAllRows(SHEET_NAMES.INNOVATIONS)
         .filter(r => r.status === STATUS.PUBLISHED && (!year || String(r.academic_year) === String(year)));
@@ -178,7 +178,7 @@ const DashboardService = {
   /** รายงาน: สรุปรายบุคคล (Admin) */
   getTeacherReport: function(params) {
     try {
-      requireRole(params, [ROLES.SUPERADMIN, ROLES.ADMIN]);
+      requireRole(params, [ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.HEAD, ROLES.TEACHER]);
       const innovations = getAllRows(SHEET_NAMES.INNOVATIONS)
         .filter(r => r.status === STATUS.PUBLISHED);
       const users = getAllRows(SHEET_NAMES.USERS)
@@ -209,7 +209,7 @@ const DashboardService = {
   /** รายงาน: สรุปการอนุมัติ (รายเดือน + เวลาเฉลี่ย) */
   getApprovalReport: function(params) {
     try {
-      requireRole(params, [ROLES.SUPERADMIN, ROLES.ADMIN]);
+      requireRole(params, [ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.HEAD, ROLES.TEACHER]);
       const rows = getAllRows(SHEET_NAMES.INNOVATIONS);
 
       // 12 เดือนล่าสุด
@@ -263,7 +263,13 @@ const DashboardService = {
     try {
       requireRole(params, [ROLES.SUPERADMIN, ROLES.ADMIN]);
       const p = params || {};
+      const sheet = getSheet(SHEET_NAMES.AUDIT_LOG);
+      if (!sheet) return successResponse({ logs: [], pagination: { page: 1, limit: 0, total: 0, totalPages: 0 } });
       let rows = getAllRows(SHEET_NAMES.AUDIT_LOG);
+
+      // map user_id → ชื่อ-สกุล เพื่อแสดงเป็น "Login/Activity ของผู้ใช้แต่ละคน"
+      const nameMap = {};
+      getAllRows(SHEET_NAMES.USERS).forEach(u => { nameMap[u.user_id] = (u.title || '') + u.first_name + ' ' + u.last_name; });
 
       if (p.user_id) rows = rows.filter(r => r.user_id === p.user_id);
       if (p.action) rows = rows.filter(r => r.action === p.action);
@@ -274,7 +280,14 @@ const DashboardService = {
       const page = parseInt(p.page) || 1;
       const limit = parseInt(p.limit) || 50;
       const total = rows.length;
-      const paged = rows.slice((page - 1) * limit, page * limit);
+      const paged = rows.slice((page - 1) * limit, page * limit).map(r => ({
+        timestamp: String(r.timestamp || ''),
+        user_id: r.user_id,
+        user_name: nameMap[r.user_id] || r.user_id || 'GUEST',
+        action: r.action,
+        target_type: r.target_type,
+        detail: typeof r.detail === 'string' ? r.detail : String(r.detail || ''),
+      }));
 
       return successResponse({
         logs: paged,
