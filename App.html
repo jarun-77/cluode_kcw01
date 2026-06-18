@@ -618,6 +618,10 @@ var INNOVATION_TYPES={'01':'สื่อการสอน / CAI','02':'วิ�
 var DEPARTMENTS=['ภาษาไทย','คณิตศาสตร์','วิทยาศาสตร์และเทคโนโลยี','สังคมศึกษา ศาสนา และวัฒนธรรม','สุขศึกษาและพลศึกษา','ศิลปะ','การงานอาชีพ','ภาษาต่างประเทศ','กิจกรรมพัฒนาผู้เรียน'];
 var GRADE_LEVELS=['ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'];
 var typeColors=['#1A5276','#2E86C1','#148F77','#F39C12','#8E44AD','#85929E'];
+// สีประจำแต่ละประเภทนวัตกรรม (ประเภทละสี เพื่อแยกง่าย)
+var TYPE_COLORS={'01':'#2E86C1','02':'#8E44AD','03':'#148F77','04':'#E67E22','05':'#E74C3C','99':'#5D6D7E'};
+function typeColor(code){return TYPE_COLORS[String(code==null?'':code).padStart(2,'0')]||'#1A5276';}
+function shade(hex,p){var n=parseInt(hex.slice(1),16),r=(n>>16)+p,g=(n>>8&255)+p,b=(n&255)+p;return '#'+(0x1000000+(Math.max(0,Math.min(255,r))<<16)+(Math.max(0,Math.min(255,g))<<8)+Math.max(0,Math.min(255,b))).toString(16).slice(1);}
 var chartFont={family:'Sarabun',size:13};
 var chartDefaults={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:chartFont}},tooltip:{titleFont:chartFont,bodyFont:chartFont}}};
 function thaiYears(){var y=new Date().getFullYear()+543;var a=[];for(var i=0;i<=5;i++)a.push(y-i);return a;}
@@ -1256,14 +1260,16 @@ function loadBrowse(){
     box.innerHTML=list.map(function(r){
       var isNew=r.created_at && (nowMs-new Date(r.created_at).getTime()) < 14*86400000;
       var newBadge=isNew?'<span class="inv-new"><i class="fas fa-star"></i> ใหม่</span>':'';
+      var col=typeColor(r.type_code);
+      var chip='<span class="inv-type" style="background:'+col+';color:#fff">'+esc(r.type_name)+'</span>';
       var top=r.cover_url
-        ? '<div class="inv-top" style="background-image:url('+esc(r.cover_url)+')"><div class="ovl"></div>'+newBadge+'<span class="inv-type">'+esc(r.type_name)+'</span></div>'
-        : '<div class="inv-top">'+newBadge+'<i class="fas fa-lightbulb"></i><span class="inv-type">'+esc(r.type_name)+'</span></div>';
+        ? '<div class="inv-top" style="background-image:url('+esc(r.cover_url)+')"><div class="ovl"></div>'+newBadge+chip+'</div>'
+        : '<div class="inv-top" style="background:linear-gradient(135deg,'+col+','+shade(col,-35)+')">'+newBadge+'<i class="fas fa-lightbulb"></i>'+chip+'</div>';
       var tav=r.teacher_profile_url
         ? '<span class="avatar-sm"><img src="'+esc(r.teacher_profile_url)+'" referrerpolicy="no-referrer"></span>'
         : '<span class="avatar-sm rl-TEACHER"><i class="fas fa-user"></i></span>';
       var tags=(r.tags||'').split(',').filter(function(t){return t.trim();}).slice(0,3).map(function(t){return '<span style="font-size:11px;color:var(--secondary)">#'+esc(t.trim())+'</span>';}).join(' ');
-      return '<div class="inv-card" onclick="openDetail(\''+r.innovation_id+'\')">'+top+
+      return '<div class="inv-card" style="border-top:4px solid '+col+'" onclick="openDetail(\''+r.innovation_id+'\')">'+top+
         '<div class="inv-body">'+(r.department?'<span class="inv-dept"><i class="fas fa-book"></i> '+esc(r.department)+'</span>':'')+
         '<div class="inv-title">'+esc(r.title)+'</div>'+
         '<div class="inv-teacher">'+tav+' '+esc(r.teacher_name)+'</div>'+
@@ -1281,11 +1287,15 @@ function openDetail(id){
     var files=(r.file_urls||[]).map(function(u,i){return '<a class="pc-file" href="'+esc(u)+'" target="_blank"><i class="fas fa-paperclip"></i> '+esc((r.file_names&&r.file_names[i])||('ไฟล์ '+(i+1)))+'</a>';}).join('');
     var link=r.link_url?'<a class="pc-file" href="'+esc(r.link_url)+'" target="_blank"><i class="fas fa-link"></i> ลิงก์ภายนอก</a>':'';
     var grades=(r.grade_level||[]).join(', ');
-    var cover=r.cover_url?'<div style="height:190px;border-radius:12px;background:url('+esc(r.cover_url)+') center/cover;margin-bottom:14px"></div>':'';
+    var col=typeColor(r.type_code);
+    var banner=r.cover_url
+      ? '<div style="height:190px;border-radius:12px;background:url('+esc(r.cover_url)+') center/cover;margin-bottom:14px;border-top:5px solid '+col+'"></div>'
+      : '<div style="height:90px;border-radius:12px;margin-bottom:14px;background:linear-gradient(135deg,'+col+','+shade(col,-35)+');display:flex;align-items:center;justify-content:center;color:#fff;font-size:30px"><i class="fas fa-lightbulb"></i></div>';
     var tav=r.teacher_profile_url?'<span class="avatar-sm"><img src="'+esc(r.teacher_profile_url)+'" referrerpolicy="no-referrer"></span>':'<span class="avatar-sm rl-TEACHER"><i class="fas fa-user"></i></span>';
-    box.innerHTML=cover+'<div class="modal-title">'+esc(r.title)+'</div>'+
+    box.innerHTML=banner+'<div style="display:inline-block;background:'+col+';color:#fff;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:8px"><i class="fas fa-tag"></i> '+esc(r.type_name)+'</div>'+
+      '<div class="modal-title" style="border-left:4px solid '+col+';padding-left:10px">'+esc(r.title)+'</div>'+
       '<div class="inv-teacher" style="margin:0 0 12px">'+tav+' <strong>'+esc(r.teacher_name)+'</strong></div>'+
-      '<div class="pc-meta" style="margin-bottom:12px"><span><i class="fas fa-tag"></i> '+esc(r.type_name)+'</span><span><i class="fas fa-book"></i> '+esc(r.department||'-')+'</span><span><i class="fas fa-layer-group"></i> '+esc(grades||'-')+'</span><span><i class="fas fa-calendar"></i> ปี '+esc(r.academic_year||'-')+'</span><span><i class="fas fa-eye"></i> '+(r.view_count||0)+' ครั้ง</span></div>'+
+      '<div class="pc-meta" style="margin-bottom:12px"><span><i class="fas fa-book"></i> '+esc(r.department||'-')+'</span><span><i class="fas fa-layer-group"></i> '+esc(grades||'-')+'</span><span><i class="fas fa-calendar"></i> ปี '+esc(r.academic_year||'-')+'</span><span><i class="fas fa-eye"></i> '+(r.view_count||0)+' ครั้ง</span></div>'+
       '<p style="font-size:14px;line-height:1.7;color:#444;margin-bottom:14px;white-space:pre-wrap">'+esc(r.description||'')+'</p>'+
       ((files||link)?'<div class="pc-files">'+files+link+'</div>':'');
   }).catch(function(){box.innerHTML='<div class="empty">เกิดข้อผิดพลาด</div>';});
@@ -1378,7 +1388,7 @@ function handleCoverImage(ev){
 function clearCover(){pendingCoverUrl='';document.getElementById('up_coverPreview').innerHTML='';document.getElementById('up_coverFile').value='';}
 
 // ════════ FOOTER ════════
-var APP_VERSION='1.5';
+var APP_VERSION='1.6';
 function renderFooter(){
   var c=state.publicConfig||{};
   var lines=[c.footer_line1,c.footer_line2,c.footer_line3].filter(function(x){return x;});
