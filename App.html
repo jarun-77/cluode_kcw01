@@ -1114,10 +1114,10 @@ function loadMy(){
     if(!list.length){box.innerHTML='<div class="empty"><i class="fas fa-folder-open" style="font-size:32px;color:var(--draft)"></i><br><br>ยังไม่มีนวัตกรรม<br><br><button class="btn btn-accent" onclick="showView(\'upload\')"><i class="fas fa-plus"></i> เพิ่มนวัตกรรมแรก</button></div>';return;}
     box.innerHTML='<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>ชื่อ</th><th>ประเภท</th><th>ปี</th><th>สถานะ</th><th></th></tr></thead><tbody>'+
       list.map(function(r){
-        var canEdit=(r.status==='DRAFT'||r.status==='REJECTED');
         var reject=r.status==='REJECTED'&&r.reject_reason?'<div style="font-size:12px;color:var(--rejected);margin-top:4px"><i class="fas fa-info-circle"></i> '+esc(r.reject_reason)+'</div>':'';
-        return '<tr><td>'+esc(r.title)+reject+'</td><td>'+esc(r.type_name)+'</td><td>'+esc(r.academic_year||'-')+'</td><td><span class="badge '+r.status+'">'+esc(r.status_label||r.status)+'</span></td>'+
-          '<td style="white-space:nowrap">'+(canEdit?'<button class="btn btn-ghost btn-sm" onclick="editInnovation(\''+r.innovation_id+'\')"><i class="fas fa-edit"></i></button> <button class="btn btn-ghost btn-sm" onclick="deleteInnovation(\''+r.innovation_id+'\')"><i class="fas fa-trash"></i></button>':'<span style="color:#aaa;font-size:12px">—</span>')+'</td></tr>';
+        var note=r.status==='PUBLISHED'?'<div style="font-size:11px;color:var(--dark-gray);margin-top:3px"><i class="fas fa-info-circle"></i> แก้ไขแล้วต้องรออนุมัติใหม่</div>':'';
+        return '<tr><td>'+esc(r.title)+reject+note+'</td><td>'+esc(r.type_name)+'</td><td>'+esc(r.academic_year||'-')+'</td><td><span class="badge '+r.status+'">'+esc(r.status_label||r.status)+'</span></td>'+
+          '<td style="white-space:nowrap"><button class="btn btn-ghost btn-sm" title="แก้ไข" onclick="editInnovation(\''+r.innovation_id+'\')"><i class="fas fa-edit"></i></button> <button class="btn btn-ghost btn-sm" title="ลบ" style="color:var(--rejected)" onclick="deleteInnovation(\''+r.innovation_id+'\')"><i class="fas fa-trash"></i></button></td></tr>';
       }).join('')+'</tbody></table></div>';
     state.myInnovations=list;
   }).catch(function(){box.innerHTML='<div class="empty">เกิดข้อผิดพลาด</div>';});
@@ -1388,7 +1388,7 @@ function handleCoverImage(ev){
 function clearCover(){pendingCoverUrl='';document.getElementById('up_coverPreview').innerHTML='';document.getElementById('up_coverFile').value='';}
 
 // ════════ FOOTER ════════
-var APP_VERSION='1.6';
+var APP_VERSION='1.7';
 function renderFooter(){
   var c=state.publicConfig||{};
   var lines=[c.footer_line1,c.footer_line2,c.footer_line3].filter(function(x){return x;});

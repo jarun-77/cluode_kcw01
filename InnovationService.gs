@@ -174,13 +174,10 @@ const InnovationService = {
       const item = rows.find(r => r.innovation_id === id);
       if (!item) return errorResponse('ไม่พบนวัตกรรมที่ระบุ');
 
-      // ครูแก้ได้เฉพาะงานตัวเองที่ DRAFT/REJECTED
+      // ครู/หัวหน้ากลุ่มสาระ แก้ได้เฉพาะงานของตนเอง (ทุกสถานะ — แก้แล้วส่งกลับไปรออนุมัติใหม่)
       if (session.role === ROLES.TEACHER || session.role === ROLES.HEAD) {
         if (item.teacher_id !== session.user_id) {
           return errorResponse('คุณไม่มีสิทธิ์แก้ไขนวัตกรรมนี้');
-        }
-        if (![STATUS.DRAFT, STATUS.REJECTED].includes(item.status)) {
-          return errorResponse('ไม่สามารถแก้ไขนวัตกรรมที่อยู่ในสถานะนี้ได้');
         }
       }
 
@@ -231,13 +228,10 @@ const InnovationService = {
       const item = rows.find(r => r.innovation_id === id);
       if (!item) return errorResponse('ไม่พบนวัตกรรมที่ระบุ');
 
-      // ครูลบได้เฉพาะของตัวเอง และ DRAFT/REJECTED เท่านั้น
-      if (session.role === ROLES.TEACHER) {
+      // ครู/หัวหน้ากลุ่มสาระ ลบได้เฉพาะงานของตนเอง (ทุกสถานะ)
+      if (session.role === ROLES.TEACHER || session.role === ROLES.HEAD) {
         if (item.teacher_id !== session.user_id) {
           return errorResponse('คุณไม่มีสิทธิ์ลบนวัตกรรมนี้');
-        }
-        if (![STATUS.DRAFT, STATUS.REJECTED].includes(item.status)) {
-          return errorResponse('ไม่สามารถลบนวัตกรรมที่อยู่ในสถานะนี้');
         }
       }
 
