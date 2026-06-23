@@ -539,7 +539,7 @@
   <div class="alert" id="userAlert"><i class="fas fa-exclamation-circle"></i><span id="userAlertTxt"></span></div>
   <input type="hidden" id="u_user_id">
   <div class="form-row">
-    <div><label>คำนำหน้า</label><select id="u_title"><option>นาย</option><option>นาง</option><option>นางสาว</option><option>ว่าที่ร้อยตรี</option><option>ดร.</option></select></div>
+    <div><label>คำนำหน้า</label><select id="u_title"><option>นาย</option><option>นาง</option><option>นางสาว</option><option>ว่าที่ร้อยตรี</option><option>ว่าที่ร้อยตรีหญิง</option><option>ดร.</option></select></div>
     <div><label>บทบาท</label><select id="u_role"><option value="TEACHER">ครู</option><option value="HEAD">หัวหน้ากลุ่มสาระ</option><option value="ADMIN">ผู้ดูแลระบบ</option><option value="SUPERADMIN">ผู้ดูแลสูงสุด</option></select></div>
   </div>
   <div class="form-row"><div><label>ชื่อ</label><input type="text" id="u_first_name"></div><div><label>นามสกุล</label><input type="text" id="u_last_name"></div></div>
@@ -596,7 +596,7 @@
       <input type="file" id="profileFile" accept="image/*" style="display:none" onchange="handleProfileImage(event)">
       <button class="btn btn-ghost btn-sm" onclick="document.getElementById('profileFile').click()" id="profilePicBtn"><i class="fas fa-camera"></i> เปลี่ยนรูปโปรไฟล์</button>
     </div>
-    <div class="form-row"><div><label>คำนำหน้า</label><select id="pf_title"><option>นาย</option><option>นาง</option><option>นางสาว</option><option>ว่าที่ร้อยตรี</option><option>ดร.</option></select></div><div><label>ชื่อ</label><input type="text" id="pf_first_name"></div></div>
+    <div class="form-row"><div><label>คำนำหน้า</label><select id="pf_title"><option>นาย</option><option>นาง</option><option>นางสาว</option><option>ว่าที่ร้อยตรี</option><option>ว่าที่ร้อยตรีหญิง</option><option>ดร.</option></select></div><div><label>ชื่อ</label><input type="text" id="pf_first_name"></div></div>
     <label>นามสกุล</label><input type="text" id="pf_last_name">
     <div class="form-row"><div><label>อีเมล</label><input type="email" id="pf_email"></div><div><label>เบอร์โทร</label><input type="text" id="pf_phone"></div></div>
     <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('profileModal')">ปิด</button><button class="btn btn-primary" id="pf_saveBtn" onclick="saveProfile()"><i class="fas fa-save"></i> บันทึก</button></div>
@@ -1388,7 +1388,7 @@ function handleCoverImage(ev){
 function clearCover(){pendingCoverUrl='';document.getElementById('up_coverPreview').innerHTML='';document.getElementById('up_coverFile').value='';}
 
 // ════════ FOOTER ════════
-var APP_VERSION='1.8';
+var APP_VERSION='1.9';
 function renderFooter(){
   var c=state.publicConfig||{};
   var lines=[c.footer_line1,c.footer_line2,c.footer_line3].filter(function(x){return x;});
