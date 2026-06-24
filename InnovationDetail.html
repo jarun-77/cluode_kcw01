@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #1A5276;
+      --secondary: #2E86C1;
+      --accent: #148F77;
+      --light-blue: #D6EAF8;
+      --gray-bg: #F2F3F4;
+      --font-main: 'Sarabun', sans-serif;
+      --font-heading: 'Prompt', sans-serif;
+      --radius: 12px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.08);
+      --shadow-hover: 0 6px 20px rgba(26,82,118,0.15);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-main); background: var(--gray-bg); color: #2C3E50; }
+
+    /* ─── HEADER ─── */
+    .header { background: var(--primary); padding: 0 24px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    .header-inner { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-icon { width: 38px; height: 38px; border-radius: 8px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 18px; color: #fff; }
+    .logo-text { font-family: var(--font-heading); color: #fff; font-size: 16px; font-weight: 600; }
+    .logo-sub { font-size: 11px; color: rgba(255,255,255,0.7); }
+    .nav { display: flex; align-items: center; gap: 4px; }
+    .nav a { color: rgba(255,255,255,0.85); text-decoration: none; padding: 6px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; transition: background .2s; }
+    .nav a:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    .btn-sm { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; padding: 7px 16px; font-size: 13px; cursor: pointer; font-family: var(--font-main); text-decoration: none; transition: background .2s; }
+    .btn-sm:hover { background: rgba(255,255,255,0.25); }
+
+    /* ─── BREADCRUMB ─── */
+    .breadcrumb { background: #fff; border-bottom: 1px solid #E8ECF0; padding: 12px 24px; }
+    .breadcrumb-inner { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; gap: 8px; font-size: 13px; color: #95A5A6; }
+    .breadcrumb a { color: var(--secondary); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb i { font-size: 10px; }
+
+    /* ─── MAIN LAYOUT ─── */
+    .main { max-width: 1280px; margin: 0 auto; padding: 28px 24px; display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+
+    /* ─── CONTENT CARD ─── */
+    .content-card { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .detail-header { padding: 28px 32px 24px; border-bottom: 1px solid #F0F3F4; }
+    .type-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 600;
+      margin-bottom: 14px; background: var(--light-blue); color: var(--primary);
+    }
+    .detail-title { font-family: var(--font-heading); font-size: 24px; font-weight: 700; color: #1A252F; line-height: 1.4; margin-bottom: 12px; }
+    .meta-row { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 14px; }
+    .meta-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #7F8C8D; }
+    .meta-item i { color: var(--secondary); width: 16px; }
+    .meta-item strong { color: #2C3E50; }
+    .tags-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .tag { background: var(--light-blue); color: var(--primary); border-radius: 6px; padding: 4px 10px; font-size: 12px; }
+
+    .detail-body { padding: 28px 32px; }
+    .section-title { font-family: var(--font-heading); font-size: 16px; font-weight: 600; color: var(--primary); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .section-title i { font-size: 14px; }
+    .description-text { font-size: 15px; line-height: 1.8; color: #2C3E50; white-space: pre-wrap; word-break: break-word; }
+
+    /* Status banner */
+    .status-banner { padding: 12px 32px; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+    .status-banner.published { background: #E8F8F5; color: #148F77; }
+
+    /* ─── FILE VIEWER ─── */
+    .file-section { padding: 0 32px 28px; }
+    .file-list { display: flex; flex-direction: column; gap: 10px; }
+    .file-item {
+      display: flex; align-items: center; gap: 12px;
+      border: 1px solid #E8ECF0; border-radius: 10px; padding: 12px 16px;
+      transition: all .2s; cursor: pointer;
+    }
+    .file-item:hover { border-color: var(--secondary); background: var(--light-blue); }
+    .file-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .file-info { flex: 1; min-width: 0; }
+    .file-name { font-size: 14px; font-weight: 600; color: #2C3E50; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-size { font-size: 12px; color: #95A5A6; }
+    .file-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .btn-icon {
+      width: 34px; height: 34px; border-radius: 8px; border: 1px solid #E0E0E0;
+      background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      color: #7F8C8D; font-size: 13px; transition: all .2s; text-decoration: none;
+    }
+    .btn-icon:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    /* Link */
+    .link-box {
+      display: flex; align-items: center; gap: 12px;
+      border: 1px solid #E8ECF0; border-radius: 10px; padding: 14px 16px;
+      margin-top: 10px; background: #F8FEFF;
+    }
+    .link-box i { color: var(--secondary); font-size: 20px; }
+    .link-url { flex: 1; font-size: 14px; color: var(--secondary); word-break: break-all; }
+    .btn-visit {
+      background: var(--secondary); color: #fff; border: none; border-radius: 8px;
+      padding: 8px 16px; font-size: 13px; font-family: var(--font-main); cursor: pointer;
+      text-decoration: none; display: flex; align-items: center; gap: 6px; white-space: nowrap;
+    }
+    .btn-visit:hover { background: var(--primary); }
+
+    /* File preview modal */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      z-index: 1000; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-box { background: #fff; border-radius: 16px; width: 90%; max-width: 900px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; }
+    .modal-header { padding: 16px 20px; border-bottom: 1px solid #E8ECF0; display: flex; align-items: center; justify-content: space-between; }
+    .modal-title { font-family: var(--font-heading); font-size: 15px; font-weight: 600; }
+    .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #95A5A6; }
+    .modal-body { flex: 1; overflow: auto; padding: 0; }
+    .modal-body iframe { width: 100%; height: 100%; min-height: 600px; border: none; }
+
+    /* ─── SIDEBAR ─── */
+    .sidebar { display: flex; flex-direction: column; gap: 16px; }
+    .sidebar-card { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; }
+    .sidebar-title { font-family: var(--font-heading); font-size: 14px; font-weight: 600; color: var(--primary); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+    .info-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid #F8F9FA; }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { font-size: 12px; color: #95A5A6; min-width: 80px; padding-top: 2px; }
+    .info-value { font-size: 13px; color: #2C3E50; font-weight: 500; }
+    .grade-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+    .grade-chip { background: var(--light-blue); color: var(--primary); border-radius: 4px; padding: 2px 8px; font-size: 12px; }
+
+    /* Teacher card */
+    .teacher-avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--light-blue); display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 12px; }
+    .teacher-name-lg { font-family: var(--font-heading); font-size: 15px; font-weight: 600; color: #1A252F; }
+    .teacher-dept { font-size: 13px; color: #7F8C8D; margin-top: 2px; }
+
+    /* Action buttons */
+    .btn-action {
+      width: 100%; border-radius: 10px; border: none; padding: 11px;
+      font-family: var(--font-main); font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--secondary); }
+    .btn-outline { background: transparent; color: var(--primary); border: 2px solid var(--primary); margin-top: 8px; }
+    .btn-outline:hover { background: var(--light-blue); }
+
+    /* View count */
+    .view-count { text-align: center; padding: 12px; background: var(--gray-bg); border-radius: 10px; }
+    .view-num { font-family: var(--font-heading); font-size: 28px; font-weight: 700; color: var(--primary); }
+    .view-label { font-size: 12px; color: #7F8C8D; }
+
+    /* Loading state */
+    .loading-state { text-align: center; padding: 80px 24px; }
+    .loading-state i { font-size: 40px; color: var(--secondary); animation: spin 1s linear infinite; }
+    @keyframes spin { 0%{ transform:rotate(0)} 100%{ transform:rotate(360deg)} }
+
+    @media (max-width: 900px) {
+      .main { grid-template-columns: 1fr; }
+      .sidebar { order: -1; }
+    }
+    @media (max-width: 600px) {
+      .main { padding: 16px; }
+      .detail-header { padding: 20px; }
+      .detail-body, .file-section { padding: 0 20px 20px; }
+      .detail-title { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <a href="?page=index" class="logo">
+      <div class="logo-icon"><i class="fas fa-lightbulb"></i></div>
+      <div>
+        <div class="logo-text">KIMS</div>
+        <div class="logo-sub">กระแชงวิทยา</div>
+      </div>
+    </a>
+    <nav class="nav">
+      <a href="?page=index">หน้าหลัก</a>
+      <a href="?page=innovations">นวัตกรรม</a>
+    </nav>
+    <div id="navAuth">
+      <a href="?page=login" class="btn-sm"><i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ</a>
+    </div>
+  </div>
+</header>
+
+<!-- BREADCRUMB -->
+<div class="breadcrumb">
+  <div class="breadcrumb-inner">
+    <a href="?page=index">หน้าหลัก</a>
+    <i class="fas fa-chevron-right"></i>
+    <a href="?page=innovations">นวัตกรรม</a>
+    <i class="fas fa-chevron-right"></i>
+    <span id="breadTitle">รายละเอียด</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="mainContent">
+  <div class="loading-state" style="grid-column:1/-1">
+    <i class="fas fa-spinner"></i>
+    <div style="margin-top:16px;color:#7F8C8D">กำลังโหลดข้อมูล...</div>
+  </div>
+</div>
+
+<!-- FILE PREVIEW MODAL -->
+<div class="modal-overlay" id="previewModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title" id="previewTitle">ดูไฟล์</span>
+      <button class="modal-close" onclick="closePreview()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="previewBody"></div>
+  </div>
+</div>
+
+<script>
+  // ── EXEC_URL ถูก inject โดย Code.gs ตอน serve ──────────
+  var EXEC_URL = "";  // placeholder — Code.gs จะแทนค่าจริง
+
+  function getExecUrl() { return EXEC_URL || window.location.href.split('?')[0]; }
+  function goTo(page) {
+    var token = sessionStorage.getItem('KIMS_TOKEN') || '';
+    var url = getExecUrl() + '?page=' + page;
+    if (token) url += '&_kt=' + encodeURIComponent(token);
+    window.open(url, '_top');
+  }
+  (function() {
+    try { var p = new URLSearchParams(window.location.search); var t = p.get('_kt'); if (t) { sessionStorage.setItem('KIMS_TOKEN', t); p.delete('_kt'); if (history.replaceState) history.replaceState(null, '', '?' + p.toString()); } } catch(e) {}
+    document.addEventListener('click', function(ev) {
+      var a = ev.target && ev.target.closest ? ev.target.closest('a[href*="?page="]') : null;
+      if (!a) return;
+      var href = a.getAttribute('href') || '';
+      var i = href.indexOf('?page='); if (i === -1) return;
+      ev.preventDefault();
+      var tok = sessionStorage.getItem('KIMS_TOKEN') || '';
+      var url = getExecUrl() + href.substring(i);
+      if (tok && url.indexOf('_kt=') === -1) url += '&_kt=' + encodeURIComponent(tok);
+      window.open(url, a.getAttribute('target') === '_blank' ? '_blank' : '_top');
+    });
+  })();
+  function getToken() { return sessionStorage.getItem('KIMS_TOKEN') || ''; }
+
+  function callAPI(action, params) {
+    var payload = Object.assign({ action: action, token: getToken() }, params || {});
+    return new Promise(function(resolve, reject) {
+      google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(reject)
+        .handleRequest(payload);
+    });
+  }
+
+
+const TYPE_ICONS = {'01':'🖥️','02':'🔬','03':'📋','04':'📝','05':'⚙️','99':'💡'};
+const TYPE_NAMES = {'01':'สื่อการสอน/CAI','02':'วิจัยในชั้นเรียน','03':'แผนการจัดการเรียนรู้','04':'ชุดกิจกรรม/ใบงาน','05':'เทคโนโลยีทางการศึกษา','99':'อื่นๆ'};
+const FILE_ICONS = { pdf:'📕', doc:'📘', docx:'📘', xls:'📗', xlsx:'📗', ppt:'📙', pptx:'📙', mp4:'🎬', jpg:'🖼️', jpeg:'🖼️', png:'🖼️', gif:'🖼️' };
+const FILE_COLORS = { pdf:'#E74C3C', doc:'#2E86C1', docx:'#2E86C1', xls:'#27AE60', xlsx:'#27AE60', ppt:'#E67E22', pptx:'#E67E22', mp4:'#8E44AD', jpg:'#148F77', jpeg:'#148F77', png:'#148F77', gif:'#148F77' };
+
+let innovationData = null;
+
+
+window.addEventListener('DOMContentLoaded', () => {
+  checkAuth();
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  if (!id) {
+    showError('ไม่พบ ID นวัตกรรม');
+    return;
+  }
+  loadDetail(id);
+});
+
+async function checkAuth() {
+  try {
+    const res = await callAPI('getCurrentUser', {});
+    if (res.success) {
+      const u = res.data;
+      document.getElementById('navAuth').innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="color:rgba(255,255,255,.8);font-size:13px"><i class="fas fa-user-circle"></i> ${escHtml(u.full_name)}</span>
+          <button class="btn-sm" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>`;
+    }
+  } catch(e) {}
+}
+
+async function loadDetail(id) {
+  try {
+    const res = await callAPI('getInnovationById', { innovation_id: id });
+    if (!res.success) { showError(res.error || 'ไม่พบนวัตกรรม'); return; }
+    innovationData = res.data;
+    renderDetail(innovationData);
+    document.getElementById('breadTitle').textContent = innovationData.title || 'รายละเอียด';
+    document.title = 'KIMS — ' + (innovationData.title || 'รายละเอียด');
+  } catch(e) {
+    showError('เกิดข้อผิดพลาด กรุณาลองใหม่');
+  }
+}
+
+function renderDetail(d) {
+  const grades = tryParseArr(d.grade_level);
+  const tags = tryParseArr(d.tags);
+  const fileUrls = tryParseArr(d.file_urls);
+  const fileNames = tryParseArr(d.file_names);
+  const typeIcon = TYPE_ICONS[d.type_code] || '💡';
+  const typeName = TYPE_NAMES[d.type_code] || 'อื่นๆ';
+  const hasFiles = fileUrls.length > 0;
+  const hasLink = d.link_url && d.link_url.startsWith('http');
+
+  document.getElementById('mainContent').innerHTML = `
+    <div>
+      <!-- Content Card -->
+      <div class="content-card">
+        <div class="status-banner published">
+          <i class="fas fa-check-circle"></i>
+          เผยแพร่แล้ว — อนุมัติโดย ${escHtml(d.approved_by || '-')} เมื่อ ${escHtml(d.approved_at || '-')}
+        </div>
+        <div class="detail-header">
+          <div class="type-badge">
+            <span>${typeIcon}</span>
+            <span>${typeName}</span>
+          </div>
+          <div class="detail-title">${escHtml(d.title)}</div>
+          <div class="meta-row">
+            <div class="meta-item"><i class="fas fa-chalkboard-teacher"></i><strong>${escHtml(d.teacher_name || '-')}</strong></div>
+            <div class="meta-item"><i class="fas fa-book"></i>${escHtml(d.department || '-')}</div>
+            <div class="meta-item"><i class="fas fa-calendar"></i>ปีการศึกษา ${escHtml(String(d.academic_year||''))}</div>
+            ${d.semester ? `<div class="meta-item"><i class="fas fa-clock"></i>ภาคเรียนที่ ${escHtml(String(d.semester))}</div>` : ''}
+            <div class="meta-item"><i class="fas fa-eye"></i>${Number(d.view_count||0).toLocaleString()} ครั้ง</div>
+          </div>
+          ${tags.length ? `<div class="tags-row">${tags.map(t=>`<span class="tag">${escHtml(t)}</span>`).join('')}</div>` : ''}
+        </div>
+
+        ${d.description ? `
+        <div class="detail-body">
+          <div class="section-title"><i class="fas fa-align-left"></i>รายละเอียดนวัตกรรม</div>
+          <div class="description-text">${escHtml(d.description)}</div>
+        </div>` : ''}
+
+        ${hasFiles ? `
+        <div class="file-section">
+          <div class="section-title"><i class="fas fa-paperclip"></i>ไฟล์แนบ (${fileUrls.length} ไฟล์)</div>
+          <div class="file-list">
+            ${fileUrls.map((url, i) => {
+              const name = fileNames[i] || `ไฟล์ที่ ${i+1}`;
+              const ext = name.split('.').pop().toLowerCase();
+              const icon = FILE_ICONS[ext] || '📄';
+              const color = FILE_COLORS[ext] || '#7F8C8D';
+              const previewUrl = url.includes('drive.google.com') ? url.replace('/view', '/preview').replace('?usp=sharing','') : url;
+              return `<div class="file-item" onclick="openPreview('${escHtml(previewUrl)}', '${escHtml(name)}')">
+                <div class="file-icon" style="background:${color}22">${icon}</div>
+                <div class="file-info">
+                  <div class="file-name">${escHtml(name)}</div>
+                  <div class="file-size">.${ext.toUpperCase()}</div>
+                </div>
+                <div class="file-actions">
+                  <button class="btn-icon" onclick="event.stopPropagation();openPreview('${escHtml(previewUrl)}','${escHtml(name)}')" title="ดูตัวอย่าง">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <a class="btn-icon" href="${escHtml(url)}" target="_blank" onclick="event.stopPropagation()" title="เปิดใน Drive">
+                    <i class="fas fa-external-link-alt"></i>
+                  </a>
+                </div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>` : ''}
+
+        ${hasLink ? `
+        <div class="file-section" ${hasFiles?'style="padding-top:0"':''}>
+          <div class="section-title"><i class="fas fa-link"></i>ลิงก์ที่เกี่ยวข้อง</div>
+          <div class="link-box">
+            <i class="fas fa-globe-asia"></i>
+            <div class="link-url">${escHtml(d.link_url)}</div>
+            <a class="btn-visit" href="${escHtml(d.link_url)}" target="_blank">
+              <i class="fas fa-external-link-alt"></i>เปิดลิงก์
+            </a>
+          </div>
+        </div>` : ''}
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <!-- Teacher Info -->
+      <div class="sidebar-card">
+        <div class="sidebar-title"><i class="fas fa-user"></i>ครูผู้จัดทำ</div>
+        <div class="teacher-avatar">👨‍🏫</div>
+        <div class="teacher-name-lg">${escHtml(d.teacher_name || '-')}</div>
+        <div class="teacher-dept">${escHtml(d.department || '-')}</div>
+      </div>
+
+      <!-- Innovation Info -->
+      <div class="sidebar-card">
+        <div class="sidebar-title"><i class="fas fa-info-circle"></i>ข้อมูลนวัตกรรม</div>
+        <div class="info-row">
+          <div class="info-label">ประเภท</div>
+          <div class="info-value">${typeName}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">กลุ่มสาระ</div>
+          <div class="info-value">${escHtml(d.department || '-')}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">ระดับชั้น</div>
+          <div class="info-value">
+            ${grades.length ? `<div class="grade-chips">${grades.map(g=>`<span class="grade-chip">${escHtml(g)}</span>`).join('')}</div>` : '-'}
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">ปีการศึกษา</div>
+          <div class="info-value">${escHtml(String(d.academic_year||'-'))}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">ภาคเรียน</div>
+          <div class="info-value">${d.semester ? `ภาคเรียนที่ ${escHtml(String(d.semester))}` : '-'}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">วันที่เผยแพร่</div>
+          <div class="info-value">${escHtml(d.approved_at ? d.approved_at.split(' ')[0] : '-')}</div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="sidebar-card">
+        <div class="sidebar-title"><i class="fas fa-chart-bar"></i>สถิติการเข้าชม</div>
+        <div class="view-count">
+          <div class="view-num">${Number(d.view_count||0).toLocaleString()}</div>
+          <div class="view-label">ครั้ง</div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="sidebar-card">
+        <a href="?page=innovations" class="btn-action btn-primary">
+          <i class="fas fa-arrow-left"></i>กลับหน้ารายการ
+        </a>
+        <button class="btn-action btn-outline" onclick="shareThis()">
+          <i class="fas fa-share-alt"></i>แชร์
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function openPreview(url, name) {
+  document.getElementById('previewTitle').textContent = name;
+  document.getElementById('previewBody').innerHTML = `<iframe src="${url}" allowfullscreen></iframe>`;
+  document.getElementById('previewModal').classList.add('show');
+}
+
+function closePreview() {
+  document.getElementById('previewModal').classList.remove('show');
+  document.getElementById('previewBody').innerHTML = '';
+}
+
+function shareThis() {
+  const url = window.location.href;
+  if (navigator.share) {
+    navigator.share({ title: innovationData?.title || 'KIMS', url });
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(url);
+    alert('คัดลอกลิงก์แล้ว!');
+  }
+}
+
+async function logout() {
+  await callAPI('logout', {});
+  window.location.reload();
+}
+
+function showError(msg) {
+  document.getElementById('mainContent').innerHTML = `
+    <div style="grid-column:1/-1;text-align:center;padding:80px 24px">
+      <div style="font-size:56px;margin-bottom:16px">⚠️</div>
+      <div style="font-family:var(--font-heading);font-size:20px;color:#7F8C8D;margin-bottom:8px">${escHtml(msg||'เกิดข้อผิดพลาด')}</div>
+      <a href="?page=innovations" style="color:var(--secondary)">← กลับหน้ารายการ</a>
+    </div>`;
+}
+
+function tryParseArr(val) {
+  if (Array.isArray(val)) return val;
+  try { const p = JSON.parse(val); return Array.isArray(p) ? p : []; } catch(e) { return []; }
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Close modal on overlay click
+document.getElementById('previewModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closePreview();
+});
+</script>
+</body>
+</html>
